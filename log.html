@@ -73,13 +73,7 @@
       </div>
       <form id="entry-form" class="px-6 py-5 space-y-4">
         <input type="hidden" id="edit-id">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">Entry Mode</label>
-          <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
-            <label class="cursor-pointer"><input type="radio" name="e-mode" value="actual" class="sr-only" checked><span class="e-mode-option block rounded-lg px-3 py-2 text-center text-sm font-medium text-slate-600 bg-white shadow-sm">Actual</span></label>
-            <label class="cursor-pointer"><input type="radio" name="e-mode" value="planned" class="sr-only"><span class="e-mode-option block rounded-lg px-3 py-2 text-center text-sm font-medium text-slate-600">Planned</span></label>
-          </div>
-        </div>
+        <!-- Entry Mode removed: planned is inferred from start date (future = planned) -->
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-sm font-medium text-slate-700 mb-1">Leave Type</label>
             <select id="e-type" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
@@ -131,34 +125,21 @@
 
     var ltColors = { vacation:'badge badge-forest', sick:'badge text-violet-700 bg-violet-50', comp:'badge badge-clay' };
 
-    function getEntryMode(prefix) {
-      var checked = document.querySelector('input[name="' + prefix + '-mode"]:checked');
-      return checked ? checked.value : 'actual';
-    }
-
-    function updateModeToggle(prefix) {
-      document.querySelectorAll('input[name="' + prefix + '-mode"]').forEach(function(input) {
-        var chip = input.parentElement.querySelector('.' + prefix + '-mode-option');
-        if (!chip) return;
-        chip.classList.toggle('bg-white', input.checked);
-        chip.classList.toggle('shadow-sm', input.checked);
-        chip.classList.toggle('text-slate-800', input.checked);
-      });
-    }
+    // Planned/Actual mode removed: infer planned from the start date (future dates are planned)
 
     function updateEntryForm() {
-      var mode = getEntryMode('e');
       var action = document.getElementById('e-action').value;
       var workdayHours = RC.getWorkdayHours(profile);
       var startDate = document.getElementById('e-date').value;
       var endDate = document.getElementById('e-end-date').value;
       var isEdit = !!document.getElementById('edit-id').value;
+      var planned = startDate && startDate > RC.todayISO();
       var labels = {
         actual: { used: 'Leave taken', awarded: 'Credit awarded', forfeited: 'Hours forfeited' },
         planned:{ used: 'Planned leave', awarded: 'Planned credit', forfeited: 'Planned forfeiture' }
       };
       Array.from(document.getElementById('e-action').options).forEach(function(option) {
-        option.textContent = labels[mode][option.value] || option.textContent;
+        option.textContent = labels[planned ? 'planned' : 'actual'][option.value] || option.textContent;
       });
       document.getElementById('e-hours-help').textContent = 'Default workday: ' + RC.fmtHours(workdayHours, profile) + '.';
       var rangeHelp = document.getElementById('e-range-help');
@@ -169,7 +150,6 @@
       }
       document.getElementById('e-end-date').disabled = isEdit;
       document.getElementById('e-edit-note').classList.toggle('hidden', !isEdit);
-      updateModeToggle('e');
     }
 
     function getFilters() {
@@ -277,7 +257,6 @@
       document.getElementById('e-hours').value  = RC.getWorkdayHours(profile);
       document.getElementById('e-type').value   = 'vacation';
       document.getElementById('e-action').value = 'used';
-      document.querySelector('input[name="e-mode"][value="actual"]').checked = true;
       document.getElementById('e-notes').value  = '';
       updateEntryForm();
       RC.openModal('entry-modal');
@@ -293,7 +272,6 @@
       document.getElementById('e-hours').value  = tx.hours;
       document.getElementById('e-type').value   = tx.leaveTypeId;
       document.getElementById('e-action').value = tx.action;
-      document.querySelector('input[name="e-mode"][value="' + (tx.planned ? 'planned' : 'actual') + '"]').checked = true;
       document.getElementById('e-notes').value  = tx.notes || '';
       updateEntryForm();
       RC.openModal('entry-modal');
@@ -328,7 +306,7 @@
         hours: hours,
         leaveTypeId: document.getElementById('e-type').value,
         action: document.getElementById('e-action').value,
-        planned: getEntryMode('e') === 'planned',
+        planned: date > RC.todayISO(),
         notes: document.getElementById('e-notes').value.trim() || null
       };
       try {
@@ -352,9 +330,7 @@
     ['e-action','e-date','e-end-date'].forEach(function(id) {
       document.getElementById(id).addEventListener('input', updateEntryForm);
     });
-    document.querySelectorAll('input[name="e-mode"]').forEach(function(input) {
-      input.addEventListener('change', updateEntryForm);
-    });
+    // mode inputs removed; planned inferred from date
 
     ['filter-type','filter-action','filter-planned','filter-search'].forEach(function(id) {
       document.getElementById(id).addEventListener('input', renderTable);
