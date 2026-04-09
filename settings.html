@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recess — Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <div id="nav-root"></div>
+
+  <!-- First-run wizard overlay -->
+  <div id="wizard" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="bg-sky-700 rounded-t-2xl px-6 py-5 text-white sticky top-0 z-10">
+        <div class="flex items-center gap-3 mb-1">
+          <svg class="w-7 h-7 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+          </svg>
+          <span class="text-xl font-bold">Welcome to Recess</span>
+        </div>
+        <p class="text-sky-200 text-sm">Let's get your leave balances set up — about 2 minutes.</p>
+        <div class="flex gap-2 mt-3">
+          <div id="dot-1" class="h-1.5 w-8 rounded-full bg-white transition-colors"></div>
+          <div id="dot-2" class="h-1.5 w-8 rounded-full bg-sky-500 transition-colors"></div>
+          <div id="dot-3" class="h-1.5 w-8 rounded-full bg-sky-500 transition-colors"></div>
+          <div id="dot-4" class="h-1.5 w-8 rounded-full bg-sky-500 transition-colors"></div>
+        </div>
+      </div>
+
+      <!-- Step 1: Privacy + name -->
+      <div id="wiz-1" class="px-6 py-6">
+        <h3 class="font-semibold text-lg mb-2">Your data is 100% private</h3>
+        <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 text-sm text-sky-800 mb-5 space-y-2">
+          <p>Recess is a <strong>static web page</strong> — there is no server. Everything you enter stays on this device in your browser's local storage.</p>
+          <p>Your balances, service date, and usage history are <strong>never transmitted anywhere</strong>. The source code is open and auditable on GitHub.</p>
+          <p>Export your data to a JSON file at any time and import it on any device.</p>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Your name <span class="text-slate-400 font-normal">(for display)</span></label>
+            <input type="text" id="wiz-name" placeholder="e.g. Alex Smith" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Employer type</label>
+            <select id="wiz-preset" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="us_federal">US Federal Government</option>
+              <option value="custom">Other / Custom</option>
+            </select>
+          </div>
+        </div>
+        <button id="wiz-next-1" class="mt-6 w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors">Next →</button>
+      </div>
+
+      <!-- Step 2: Accrual -->
+      <div id="wiz-2" class="px-6 py-6 hidden">
+        <h3 class="font-semibold text-lg mb-4">Leave Accrual</h3>
+        <div id="wiz-federal-fields">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Federal service start date</label>
+          <p class="text-xs text-slate-500 mb-2">Used to calculate your accrual tier (4/6/8 hrs per pay period). Mid-year tier changes are handled automatically.</p>
+          <input type="date" id="wiz-incept" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div id="wiz-custom-fields" class="hidden space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Annual leave (hrs/PP)</label>
+              <input type="number" id="wiz-vac-rate" min="0" step="0.5" value="6" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Sick leave (hrs/PP)</label>
+              <input type="number" id="wiz-sick-rate" min="0" step="0.5" value="4" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Max annual leave carryover (hrs)</label>
+            <input type="number" id="wiz-max-carry" min="0" step="8" value="240" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button id="wiz-back-2" class="flex-1 border border-slate-200 text-slate-700 font-medium py-2.5 rounded-lg text-sm hover:bg-slate-50">← Back</button>
+          <button id="wiz-next-2" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 rounded-lg text-sm">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Starting balances -->
+      <div id="wiz-3" class="px-6 py-6 hidden">
+        <h3 class="font-semibold text-lg mb-2">Starting Balances</h3>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 mb-4">
+          <strong>Important:</strong> Enter the balance from your most recent leave statement and set the date to the <strong>first day of that pay period</strong>. These are hours carried <em>into</em> that period — not the post-accrual total. Using the wrong value will offset all future projections by one pay period of accrual.
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">As of date (first day of that pay period)</label>
+            <input type="date" id="wiz-asof" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Annual (hrs)</label><input type="number" id="wiz-bal-vac" min="0" step="0.5" value="0" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Sick (hrs)</label><input type="number" id="wiz-bal-sick" min="0" step="0.5" value="0" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Comp (hrs)</label><input type="number" id="wiz-bal-comp" min="0" step="0.5" value="0" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button id="wiz-back-3" class="flex-1 border border-slate-200 text-slate-700 font-medium py-2.5 rounded-lg text-sm hover:bg-slate-50">← Back</button>
+          <button id="wiz-next-3" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 rounded-lg text-sm">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Pay schedule -->
+      <div id="wiz-4" class="px-6 py-6 hidden">
+        <h3 class="font-semibold text-lg mb-2">Pay Schedule</h3>
+        <p class="text-sm text-slate-500 mb-4">The anchor date is any known pay period start date — all future dates are derived from it automatically.</p>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Pay frequency</label>
+            <select id="wiz-freq" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="biweekly" selected>Biweekly (every 2 weeks)</option>
+              <option value="semi-monthly">Semi-monthly (1st and 15th)</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Anchor date (a known pay period start)</label>
+            <input type="date" id="wiz-anchor" value="2026-01-11" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div id="wiz-pp-preview" class="bg-slate-50 rounded-lg p-3 text-xs text-slate-500"></div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button id="wiz-back-4" class="flex-1 border border-slate-200 text-slate-700 font-medium py-2.5 rounded-lg text-sm hover:bg-slate-50">← Back</button>
+          <button id="wiz-finish" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm">Get Started!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main settings -->
+  <main class="max-w-3xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-slate-800 mb-6">Settings</h1>
+    <div class="space-y-6">
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Profile</h2>
+        <div class="space-y-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Display name</label><input type="text" id="s-name" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Employer preset</label>
+            <select id="s-preset" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="us_federal">US Federal Government</option>
+              <option value="custom">Other / Custom</option>
+            </select>
+          </div>
+          <div id="s-incept-row"><label class="block text-sm font-medium text-slate-700 mb-1">Federal service start date</label><input type="date" id="s-incept" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-1">Starting Balances</h2>
+        <p class="text-xs text-slate-500 mb-4">Hours carried <em>into</em> the pay period starting on the "As of" date — from your leave statement, not the post-accrual total.</p>
+        <div class="space-y-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">As of date</label><input type="date" id="s-asof" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Annual (hrs)</label><input type="number" id="s-bal-vac" min="0" step="0.5" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Sick (hrs)</label><input type="number" id="s-bal-sick" min="0" step="0.5" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Comp (hrs)</label><input type="number" id="s-bal-comp" min="0" step="0.5" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Pay Schedule</h2>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Frequency</label>
+              <select id="s-freq" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="biweekly">Biweekly</option>
+                <option value="semi-monthly">Semi-monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1">Accrual timing</label>
+              <select id="s-timing" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="end">End of pay period</option>
+                <option value="start">Start of pay period</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Anchor date (any known pay period start)</label><input type="date" id="s-anchor" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div id="s-pp-preview" class="bg-slate-50 rounded-lg p-3 text-xs text-slate-500"></div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Display Preferences</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Units</label>
+            <select id="s-units" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Hours per workday</label><input type="number" id="s-wdh" min="1" max="24" step="0.5" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        </div>
+        <p class="text-xs text-slate-500 mt-3">Used for day-based displays and for expanding leave ranges into daily entries. Set this to `10` for a 4/10 schedule.</p>
+      </section>
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Use-or-Lose</h2>
+        <div class="grid grid-cols-3 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Annual max carry (hrs)</label><input type="number" id="s-uol-vac" min="0" step="8" placeholder="240" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"><p class="text-xs text-slate-400 mt-1">Blank = no limit</p></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Sick max carry (hrs)</label><input type="number" id="s-uol-sick" min="0" step="8" placeholder="No limit" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"><p class="text-xs text-slate-400 mt-1">Blank = no limit</p></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Comp expiry warning</label>
+            <div class="flex items-center gap-2"><input type="number" id="s-comp-warn" min="1" max="365" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"><span class="text-xs text-slate-500 shrink-0">days</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-1">Federal Holidays</h2>
+        <p class="text-xs text-slate-500 mb-4">Uncheck holidays your employer does not observe.</p>
+        <div id="s-holidays" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+      </section>
+
+      <button id="s-save" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors shadow-sm">Save Settings</button>
+
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Data</h2>
+        <div class="flex flex-wrap gap-3">
+          <button id="s-export" class="flex items-center gap-2 border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            Export JSON
+          </button>
+          <label class="flex items-center gap-2 border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+            Import JSON
+            <input type="file" id="s-import-file" accept=".json" class="hidden">
+          </label>
+          <button id="s-reset" class="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+            Reset All Data
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/accrual.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script>
+    var profile = RC.getProfile();
+    var urlParams = new URLSearchParams(window.location.search);
+
+    // Show wizard if no profile or explicitly requested
+    if (!profile || urlParams.get('setup') === '1') {
+      document.getElementById('wizard').classList.remove('hidden');
+    }
+
+    // --- Wizard logic ---
+    var wizStep   = 1;
+    var wizPreset = 'us_federal';
+
+    function showStep(n) {
+      [1,2,3,4].forEach(function(i) {
+        document.getElementById('wiz-' + i).classList.toggle('hidden', i !== n);
+        document.getElementById('dot-' + i).classList.toggle('bg-white', i === n);
+        document.getElementById('dot-' + i).classList.toggle('bg-sky-500', i !== n);
+      });
+      wizStep = n;
+    }
+
+    function updatePPPreview(anchorId, freqId, previewId) {
+      var anchor = document.getElementById(anchorId).value;
+      var freq   = document.getElementById(freqId).value;
+      if (!anchor) return;
+      try {
+        var fakeSettings = { payPeriod: { anchorDate: anchor, frequency: freq } };
+        var start = new Date();
+        var end   = RC.addDays(start, 90);
+        var pps   = RC.generatePayPeriods(fakeSettings, start, end).slice(0, 3);
+        document.getElementById(previewId).textContent = 'Next 3 pay periods: ' + pps.map(RC.formatDate).join(', ');
+      } catch(e) {}
+    }
+
+    document.getElementById('wiz-next-1').addEventListener('click', function() {
+      wizPreset = document.getElementById('wiz-preset').value;
+      document.getElementById('wiz-federal-fields').classList.toggle('hidden', wizPreset !== 'us_federal');
+      document.getElementById('wiz-custom-fields').classList.toggle('hidden', wizPreset === 'us_federal');
+      showStep(2);
+    });
+    document.getElementById('wiz-back-2').addEventListener('click', function() { showStep(1); });
+    document.getElementById('wiz-next-2').addEventListener('click', function() { showStep(3); });
+    document.getElementById('wiz-back-3').addEventListener('click', function() { showStep(2); });
+    document.getElementById('wiz-next-3').addEventListener('click', function() {
+      updatePPPreview('wiz-anchor', 'wiz-freq', 'wiz-pp-preview');
+      showStep(4);
+    });
+    document.getElementById('wiz-back-4').addEventListener('click', function() { showStep(3); });
+
+    document.getElementById('wiz-anchor').addEventListener('change', function() { updatePPPreview('wiz-anchor','wiz-freq','wiz-pp-preview'); });
+    document.getElementById('wiz-freq').addEventListener('change', function() { updatePPPreview('wiz-anchor','wiz-freq','wiz-pp-preview'); });
+
+    document.getElementById('wiz-finish').addEventListener('click', function() {
+      var p = RC.createDefaultProfile(document.getElementById('wiz-name').value || 'My Profile');
+      p.settings.employerPreset          = wizPreset;
+      p.settings.payPeriod.frequency     = document.getElementById('wiz-freq').value;
+      p.settings.payPeriod.anchorDate    = document.getElementById('wiz-anchor').value;
+
+      if (wizPreset === 'us_federal') {
+        p.settings.serviceInceptDate = document.getElementById('wiz-incept').value || null;
+      } else {
+        var vr = parseFloat(document.getElementById('wiz-vac-rate').value) || 0;
+        var sr = parseFloat(document.getElementById('wiz-sick-rate').value) || 0;
+        var mc = parseFloat(document.getElementById('wiz-max-carry').value);
+        p.settings.accrualOverrides = [
+          { leaveTypeId:'vacation', effectiveDate:'2000-01-01', hoursPerPeriod: vr },
+          { leaveTypeId:'sick',     effectiveDate:'2000-01-01', hoursPerPeriod: sr }
+        ];
+        p.settings.useOrLose.limits.vacation = mc || null;
+      }
+
+      p.balances.asOfDate       = document.getElementById('wiz-asof').value;
+      p.balances.hours.vacation = parseFloat(document.getElementById('wiz-bal-vac').value)  || 0;
+      p.balances.hours.sick     = parseFloat(document.getElementById('wiz-bal-sick').value) || 0;
+      p.balances.hours.comp     = parseFloat(document.getElementById('wiz-bal-comp').value) || 0;
+
+      RC.saveProfile(p);
+      profile = p;
+      document.getElementById('wizard').classList.add('hidden');
+      loadSettings(p);
+      RC.showToast('Profile created! Welcome to Recess.', 'success', 4000);
+    });
+
+    // --- Settings form ---
+    function loadSettings(p) {
+      document.getElementById('s-name').value    = p.displayName;
+      document.getElementById('s-preset').value  = p.settings.employerPreset;
+      document.getElementById('s-incept').value  = p.settings.serviceInceptDate || '';
+      document.getElementById('s-asof').value    = p.balances.asOfDate || '';
+      document.getElementById('s-bal-vac').value  = p.balances.hours.vacation || 0;
+      document.getElementById('s-bal-sick').value = p.balances.hours.sick || 0;
+      document.getElementById('s-bal-comp').value = p.balances.hours.comp || 0;
+      document.getElementById('s-freq').value    = p.settings.payPeriod.frequency;
+      document.getElementById('s-anchor').value  = p.settings.payPeriod.anchorDate;
+      document.getElementById('s-timing').value  = p.settings.payPeriod.accrualTiming;
+      document.getElementById('s-units').value   = p.settings.displayUnits;
+      document.getElementById('s-wdh').value     = p.settings.workdayHours;
+      var uolVac = p.settings.useOrLose.limits.vacation;
+      document.getElementById('s-uol-vac').value  = uolVac !== null ? uolVac : '';
+      var uolSick = p.settings.useOrLose.limits.sick;
+      document.getElementById('s-uol-sick').value = uolSick !== null ? uolSick : '';
+      document.getElementById('s-comp-warn').value = p.settings.compExpirationWarningDays || 30;
+      document.getElementById('s-incept-row').classList.toggle('hidden', p.settings.employerPreset !== 'us_federal');
+      updatePPPreview('s-anchor','s-freq','s-pp-preview');
+      renderHolidayCBs(p);
+    }
+
+    document.getElementById('s-preset').addEventListener('change', function(e) {
+      document.getElementById('s-incept-row').classList.toggle('hidden', e.target.value !== 'us_federal');
+    });
+    document.getElementById('s-anchor').addEventListener('change', function() { updatePPPreview('s-anchor','s-freq','s-pp-preview'); });
+    document.getElementById('s-freq').addEventListener('change', function() { updatePPPreview('s-anchor','s-freq','s-pp-preview'); });
+
+    function renderHolidayCBs(p) {
+      var observed = p.settings.holidays.observedSet;
+      document.getElementById('s-holidays').innerHTML = Object.entries(RC.HOLIDAY_DEFINITIONS).map(function(entry) {
+        var key = entry[0], def = entry[1];
+        return '<label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer p-2 rounded-lg hover:bg-slate-50">' +
+          '<input type="checkbox" class="holiday-cb rounded border-slate-300 text-sky-600" data-key="' + key + '" ' + (observed.includes(key) ? 'checked' : '') + '>' +
+          '<span>' + def.shortLabel + '</span></label>';
+      }).join('');
+    }
+
+    document.getElementById('s-save').addEventListener('click', function() {
+      if (!profile) return;
+      profile.displayName = document.getElementById('s-name').value.trim() || 'My Profile';
+      profile.settings.employerPreset = document.getElementById('s-preset').value;
+      profile.settings.serviceInceptDate = document.getElementById('s-incept').value || null;
+      profile.balances.asOfDate = document.getElementById('s-asof').value;
+      profile.balances.hours.vacation = parseFloat(document.getElementById('s-bal-vac').value) || 0;
+      profile.balances.hours.sick     = parseFloat(document.getElementById('s-bal-sick').value) || 0;
+      profile.balances.hours.comp     = parseFloat(document.getElementById('s-bal-comp').value) || 0;
+      profile.settings.payPeriod.frequency    = document.getElementById('s-freq').value;
+      profile.settings.payPeriod.anchorDate   = document.getElementById('s-anchor').value;
+      profile.settings.payPeriod.accrualTiming = document.getElementById('s-timing').value;
+      profile.settings.displayUnits  = document.getElementById('s-units').value;
+      profile.settings.workdayHours  = parseFloat(document.getElementById('s-wdh').value) || 8;
+      var uv = document.getElementById('s-uol-vac').value;
+      profile.settings.useOrLose.limits.vacation = uv !== '' ? parseFloat(uv) : null;
+      var us = document.getElementById('s-uol-sick').value;
+      profile.settings.useOrLose.limits.sick     = us !== '' ? parseFloat(us) : null;
+      profile.settings.compExpirationWarningDays = parseInt(document.getElementById('s-comp-warn').value) || 30;
+      profile.settings.holidays.observedSet = Array.from(document.querySelectorAll('.holiday-cb:checked')).map(function(cb) { return cb.dataset.key; });
+      RC.saveProfile(profile);
+      RC.showToast('Settings saved.', 'success');
+    });
+
+    document.getElementById('s-export').addEventListener('click', function() { RC.exportJSON(); RC.showToast('Exported.', 'success'); });
+
+    document.getElementById('s-import-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          profile = RC.importJSON(ev.target.result);
+          loadSettings(profile);
+          RC.showToast('Import successful!', 'success');
+        } catch(err) {
+          RC.showToast('Import failed: ' + err.message, 'error', 5000);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    document.getElementById('s-reset').addEventListener('click', function() {
+      if (!confirm('Delete ALL data? This cannot be undone.')) return;
+      RC.clearAllData();
+      window.location.href = 'settings.html?setup=1';
+    });
+
+    if (profile) loadSettings(profile);
+  </script>
+</body>
+</html>

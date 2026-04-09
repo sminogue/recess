@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recess — Comp Time</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div id="nav-root"></div>
+
+  <main class="max-w-4xl mx-auto px-4 py-6">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Comp Time</h1>
+        <p class="text-sm text-slate-500 mt-0.5">Oldest blocks used first (FIFO). Blocks expiring within <span id="warn-days">30</span> days are flagged.</p>
+      </div>
+      <button id="add-btn" class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Comp Block
+      </button>
+    </div>
+
+    <div class="bg-white border border-amber-100 rounded-xl shadow-sm p-5 mb-5">
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div><p class="text-xs text-slate-500 mb-1">Total Balance</p><p id="total-bal" class="text-2xl font-bold text-amber-600">—</p></div>
+        <div><p class="text-xs text-slate-500 mb-1">Active Blocks</p><p id="active-count" class="text-2xl font-bold text-slate-700">—</p></div>
+        <div><p class="text-xs text-slate-500 mb-1">Expiring Soon</p><p id="expiring-count" class="text-2xl font-bold text-orange-500">—</p></div>
+      </div>
+    </div>
+
+    <div id="blocks-list" class="space-y-3"></div>
+    <div id="blocks-empty" class="hidden"></div>
+    <button id="show-expired-btn" class="mt-5 text-sm text-slate-400 hover:text-slate-600 hidden">▾ Show expired blocks</button>
+    <div id="expired-list" class="space-y-3 mt-3 hidden"></div>
+  </main>
+
+  <div id="comp-modal" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="modal-title" class="font-semibold text-slate-800">Add Comp Block</h3>
+        <button data-modal-close class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <form id="comp-form" class="px-6 py-5 space-y-4">
+        <input type="hidden" id="edit-id">
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Label <span class="text-slate-400 font-normal">(optional)</span></label><input type="text" id="c-label" placeholder="e.g. Dec overtime" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Date Earned</label><input type="date" id="c-earned" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Hours</label><input type="number" id="c-hours" min="0.25" step="0.25" value="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Expires On</label>
+          <input type="date" id="c-expires" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          <p class="text-xs text-slate-400 mt-1">Federal default: 26 pay periods (~1 year) from date earned.</p>
+        </div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label><input type="text" id="c-notes" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 rounded-lg text-sm">Save</button>
+          <button type="button" data-modal-close class="flex-1 border border-slate-200 text-slate-700 font-medium py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/accrual.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script>
+    var profile = RC.getProfile();
+    if (!RC.requireProfile(profile)) { /* redirecting */ }
+    else {
+
+    RC.setupModal('comp-modal');
+    var today    = RC.todayISO();
+    var warnDays = profile.settings.compExpirationWarningDays || 30;
+    document.getElementById('warn-days').textContent = warnDays;
+
+    function defaultExpiry(earned) {
+      return RC.formatDate(RC.addDays(RC.parseDate(earned), 364));
+    }
+
+    function render() {
+      var bal      = RC.calculateBalance(profile, today);
+      var annotated = RC.annotateCompBlocks(profile, today);
+      var active   = annotated.filter(function(b) { return b.status !== 'expired'; });
+      var expiring = annotated.filter(function(b) { return b.status === 'expiring'; });
+      var expired  = annotated.filter(function(b) { return b.status === 'expired'; });
+
+      document.getElementById('total-bal').textContent      = RC.fmtHours(bal.comp || 0, profile);
+      document.getElementById('active-count').textContent   = active.length;
+      document.getElementById('expiring-count').textContent = expiring.length;
+
+      var list  = document.getElementById('blocks-list');
+      var empty = document.getElementById('blocks-empty');
+
+      if (!active.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        empty.innerHTML = '<div class="text-center py-12 text-slate-400"><p class="font-medium text-slate-500">No active comp time blocks</p><p class="text-sm mt-1">Click "Add Comp Block" to record earned comp time.</p></div>';
+      } else {
+        empty.classList.add('hidden');
+        list.innerHTML = active.map(blockCard).join('');
+        wireButtons(list);
+      }
+
+      var expBtn  = document.getElementById('show-expired-btn');
+      var expList = document.getElementById('expired-list');
+      if (expired.length) {
+        expBtn.classList.remove('hidden');
+        expBtn.textContent = '▾ Show ' + expired.length + ' expired block' + (expired.length > 1 ? 's' : '');
+        expList.innerHTML  = expired.map(blockCard).join('');
+        wireButtons(expList);
+      } else { expBtn.classList.add('hidden'); }
+    }
+
+    function blockCard(b) {
+      var sc = { active:'border-emerald-100 bg-white', expiring:'border-amber-200 bg-amber-50', expired:'border-slate-200 bg-slate-50' };
+      var bc = { active:'bg-emerald-100 text-emerald-700', expiring:'bg-amber-100 text-amber-700', expired:'bg-slate-100 text-slate-500' };
+      var sl = { active:'Active', expiring:'Expiring Soon', expired:'Expired' };
+      var pct = b.hoursOriginal > 0 ? Math.round(b.hoursRemaining / b.hoursOriginal * 100) : 0;
+      var barColor = b.status === 'expired' ? 'bg-slate-300' : b.status === 'expiring' ? 'bg-amber-400' : 'bg-amber-500';
+      return '<div class="border ' + (sc[b.status]||sc.active) + ' rounded-xl shadow-sm p-5" data-block-id="' + b.id + '">' +
+        '<div class="flex items-start justify-between mb-3">' +
+          '<div><div class="flex items-center gap-2 mb-0.5"><span class="font-semibold text-slate-800">' + (b.label||'Comp Block') + '</span>' +
+          '<span class="text-xs px-2 py-0.5 rounded-full font-medium ' + (bc[b.status]||bc.active) + '">' + (sl[b.status]||b.status) + '</span></div>' +
+          '<p class="text-xs text-slate-400">Earned ' + RC.fmtDate(b.dateEarned) +
+            (b.expiresOn ? ' · Expires ' + RC.fmtDate(b.expiresOn) : '') +
+            (b.daysUntilExpiry !== null && b.status !== 'expired' ? ' · <span class="' + (b.status==='expiring'?'text-amber-600 font-medium':'') + '">' + b.daysUntilExpiry + 'd left</span>' : '') +
+          '</p></div>' +
+          '<div class="text-right"><p class="text-xl font-bold ' + (b.status==='expired'?'text-slate-400':'text-amber-600') + '">' + RC.fmtHours(b.hoursRemaining, profile) + '</p>' +
+          '<p class="text-xs text-slate-400">of ' + RC.fmtHours(b.hoursOriginal, profile) + '</p></div>' +
+        '</div>' +
+        '<div class="mb-3"><div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div class="' + barColor + ' h-2 rounded-full" style="width:' + pct + '%"></div></div></div>' +
+        (b.notes ? '<p class="text-xs text-slate-500 mb-3">' + b.notes + '</p>' : '') +
+        '<div class="flex gap-2 justify-end">' +
+          '<button class="edit-block-btn text-xs border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-50" data-id="' + b.id + '">Edit</button>' +
+          '<button class="del-block-btn text-xs border border-red-200 text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-50" data-id="' + b.id + '">Delete</button>' +
+        '</div></div>';
+    }
+
+    function wireButtons(container) {
+      container.querySelectorAll('.edit-block-btn').forEach(function(btn) { btn.addEventListener('click', function() { openEdit(btn.dataset.id); }); });
+      container.querySelectorAll('.del-block-btn').forEach(function(btn) { btn.addEventListener('click', function() { deleteBlock(btn.dataset.id); }); });
+    }
+
+    function openAdd() {
+      document.getElementById('modal-title').textContent = 'Add Comp Block';
+      document.getElementById('edit-id').value  = '';
+      document.getElementById('c-label').value  = '';
+      document.getElementById('c-earned').value = today;
+      document.getElementById('c-hours').value  = '8';
+      document.getElementById('c-expires').value = defaultExpiry(today);
+      document.getElementById('c-notes').value  = '';
+      RC.openModal('comp-modal');
+    }
+
+    function openEdit(id) {
+      var block = profile.compBlocks.find(function(b) { return b.id === id; });
+      if (!block) return;
+      document.getElementById('modal-title').textContent = 'Edit Comp Block';
+      document.getElementById('edit-id').value   = block.id;
+      document.getElementById('c-label').value   = block.label || '';
+      document.getElementById('c-earned').value  = block.dateEarned;
+      document.getElementById('c-hours').value   = block.hoursOriginal;
+      document.getElementById('c-expires').value = block.expiresOn || '';
+      document.getElementById('c-notes').value   = block.notes || '';
+      RC.openModal('comp-modal');
+    }
+
+    function deleteBlock(id) {
+      if (!confirm('Delete this comp block?')) return;
+      RC.deleteCompBlock(profile, id);
+      RC.saveProfile(profile);
+      render();
+      RC.showToast('Block deleted.', 'info');
+    }
+
+    document.getElementById('add-btn').addEventListener('click', openAdd);
+    document.getElementById('c-earned').addEventListener('change', function(e) {
+      if (!document.getElementById('edit-id').value) document.getElementById('c-expires').value = defaultExpiry(e.target.value);
+    });
+
+    document.getElementById('comp-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var id     = document.getElementById('edit-id').value;
+      var earned = document.getElementById('c-earned').value;
+      var hours  = parseFloat(document.getElementById('c-hours').value);
+      if (!earned || !hours || hours <= 0) { RC.showToast('Enter a valid date and hours.', 'warning'); return; }
+      var data = {
+        label: document.getElementById('c-label').value.trim() || null,
+        dateEarned: earned, hoursOriginal: hours, hoursRemaining: hours,
+        expiresOn: document.getElementById('c-expires').value || null,
+        notes: document.getElementById('c-notes').value.trim() || null
+      };
+      if (id) {
+        var ex = profile.compBlocks.find(function(b) { return b.id === id; });
+        if (ex) data.hoursRemaining = ex.hoursRemaining;
+        RC.updateCompBlock(profile, id, data);
+        RC.showToast('Block updated.', 'success');
+      } else {
+        RC.addCompBlock(profile, data);
+        RC.showToast('Block added.', 'success');
+      }
+      RC.saveProfile(profile);
+      RC.closeModal('comp-modal');
+      render();
+    });
+
+    document.getElementById('show-expired-btn').addEventListener('click', function() {
+      document.getElementById('expired-list').classList.toggle('hidden');
+    });
+
+    render();
+    } // end else
+  </script>
+</body>
+</html>

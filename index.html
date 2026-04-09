@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recess — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <div id="nav-root"></div>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Privacy notice (dismissable, first visit only) -->
+    <div id="privacy-banner" class="mb-6 bg-sky-50 border border-sky-200 rounded-xl px-5 py-4 flex items-start gap-3 hidden">
+      <svg class="w-5 h-5 text-sky-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+      </svg>
+      <div class="flex-1 text-sm">
+        <span class="font-semibold text-sky-800">Your data never leaves your device.</span>
+        <span class="text-sky-700"> Recess has no server, no account, and no telemetry. Everything stays in your browser. Export your data regularly as a backup.</span>
+      </div>
+      <button id="dismiss-privacy" class="text-sky-400 hover:text-sky-600 shrink-0">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Page header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
+        <p id="profile-name" class="text-sm text-slate-500 mt-0.5"></p>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
+          <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5"/>
+          </svg>
+          <label class="text-xs text-slate-500 font-medium whitespace-nowrap">Project to:</label>
+          <input type="date" id="projection-date" class="text-sm border-none bg-transparent p-0 focus:outline-none text-slate-700 font-medium">
+        </div>
+        <button id="quick-add-btn" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Log Time
+        </button>
+      </div>
+    </div>
+
+    <!-- Balance cards -->
+    <div id="balance-cards" class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6"></div>
+
+    <!-- Bottom panels -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+          Use-or-Lose
+        </h2>
+        <div id="uol-content"></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Comp Time Expiring
+        </h2>
+        <div id="comp-content"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Quick Add Modal -->
+  <div id="quick-add-modal" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-semibold text-slate-800">Log Time Off</h3>
+        <button data-modal-close class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <form id="quick-add-form" class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Entry Mode</label>
+          <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+            <label class="cursor-pointer"><input type="radio" name="qa-mode" value="actual" class="sr-only" checked><span class="qa-mode-option block rounded-lg px-3 py-2 text-center text-sm font-medium text-slate-600 bg-white shadow-sm">Actual</span></label>
+            <label class="cursor-pointer"><input type="radio" name="qa-mode" value="planned" class="sr-only"><span class="qa-mode-option block rounded-lg px-3 py-2 text-center text-sm font-medium text-slate-600">Planned</span></label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Leave Type</label>
+          <select id="qa-type" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+            <option value="vacation">Annual Leave</option>
+            <option value="sick">Sick Leave</option>
+            <option value="comp">Comp Time</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Entry Type</label>
+          <select id="qa-action" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+            <option value="used">Leave taken</option>
+            <option value="awarded">Credit awarded</option>
+            <option value="forfeited">Hours forfeited</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+            <input type="date" id="qa-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">End Date <span class="text-slate-400 font-normal">(optional)</span></label>
+            <input type="date" id="qa-end-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Hours</label>
+          <input type="number" id="qa-hours" min="0.25" step="0.25" value="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          <p id="qa-hours-help" class="text-xs text-slate-400 mt-1"></p>
+        </div>
+        <div id="qa-range-help" class="hidden rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800"></div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label>
+          <input type="text" id="qa-notes" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 rounded-lg text-sm transition-colors">Save</button>
+          <button type="button" data-modal-close class="flex-1 border border-slate-200 text-slate-700 font-medium py-2 rounded-lg text-sm hover:bg-slate-50 transition-colors">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/accrual.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script>
+    var profile = RC.getProfile();
+    if (!RC.requireProfile(profile)) { /* redirecting */ }
+    else {
+
+    // Privacy banner
+    if (!localStorage.getItem('recess_privacy_dismissed')) {
+      document.getElementById('privacy-banner').classList.remove('hidden');
+    }
+    document.getElementById('dismiss-privacy').addEventListener('click', function() {
+      localStorage.setItem('recess_privacy_dismissed', '1');
+      document.getElementById('privacy-banner').classList.add('hidden');
+    });
+
+    document.getElementById('profile-name').textContent = profile.displayName;
+
+    var projInput = document.getElementById('projection-date');
+    projInput.value = RC.formatDate(RC.getNextUseOrLoseBoundary(profile, RC.todayISO()));
+    projInput.min   = RC.todayISO();
+
+    function render() {
+      var today    = RC.todayISO();
+      var projDate = projInput.value || (new Date().getFullYear() + '-12-31');
+      var todayBal = RC.calculateBalance(profile, today);
+      var projBal  = RC.calculateBalance(profile, projDate);
+      var uncappedProjBal = RC.calculateBalance(profile, projDate, { ignoreUseOrLose: true });
+      var nextAcc  = RC.getNextAccrual(profile, today);
+      var uolRisks = RC.getUseOrLoseRisk(profile, today);
+      var expComp  = RC.getExpiringCompBlocks(profile, today);
+      renderCards(todayBal, projBal, uncappedProjBal, nextAcc, projDate, uolRisks);
+      renderUoL(uolRisks);
+      renderComp(expComp);
+    }
+
+    function renderCards(todayBal, projBal, uncappedProjBal, nextAcc, projDate, uolRisks) {
+      var types = [
+        { id:'vacation', label:'Annual Leave', color:'sky',    barColor:'bg-sky-500' },
+        { id:'sick',     label:'Sick Leave',   color:'violet', barColor:'bg-violet-500' },
+        { id:'comp',     label:'Comp Time',    color:'amber',  barColor:'bg-amber-500' }
+      ];
+      var vacRisk = uolRisks && uolRisks.vacation;
+      var showUncappedVacation = vacRisk && vacRisk.boundaryDate === projDate;
+      var html = types.map(function(t) {
+        var curr  = todayBal[t.id] || 0;
+        var proj  = (t.id === 'vacation' && showUncappedVacation ? uncappedProjBal[t.id] : projBal[t.id]) || 0;
+        var isNeg = proj < 0;
+        var limit = profile.settings.useOrLose.limits[t.id];
+        var accH  = t.id === 'vacation' ? (nextAcc && nextAcc.vacation) : t.id === 'sick' ? (nextAcc && nextAcc.sick) : null;
+
+        var progressHtml = limit ? (
+          '<div class="mt-3">' + RC.progressBar(curr, limit, t.barColor) +
+          '<div class="flex justify-between text-xs text-slate-400 mt-1"><span>0</span><span>Max: ' + RC.fmtHours(limit, profile) + '</span></div></div>'
+        ) : '';
+
+        return '<div class="bg-white rounded-xl border ' + (isNeg ? 'border-red-200' : 'border-' + t.color + '-100') + ' shadow-sm p-5">' +
+          '<p class="text-sm font-medium text-slate-500 mb-2">' + t.label + '</p>' +
+          '<p class="text-3xl font-bold ' + (isNeg ? 'text-red-600' : 'text-slate-800') + '">' + RC.fmtHours(curr, profile) + '</p>' +
+          '<p class="text-xs text-slate-400 mb-3">current balance</p>' +
+          '<div class="border-t border-slate-100 pt-3 space-y-1.5">' +
+            '<div class="flex justify-between text-sm">' +
+              '<span class="text-slate-500">Projected ' + RC.fmtDate(projDate) + '</span>' +
+              '<span class="font-semibold ' + (proj < 0 ? 'text-red-600' : 'text-' + t.color + '-600') + '">' + RC.fmtHours(proj, profile) + '</span>' +
+            '</div>' +
+            (accH ? '<div class="flex justify-between text-sm"><span class="text-slate-500">Next accrual ' + RC.fmtDateShort(nextAcc.date) + '</span><span class="text-emerald-600 font-medium">+' + RC.fmtHours(accH, profile) + '</span></div>' : '') +
+          '</div>' +
+          progressHtml +
+        '</div>';
+      }).join('');
+      document.getElementById('balance-cards').innerHTML = html;
+    }
+
+    function renderUoL(uolRisks) {
+      var vac = uolRisks.vacation;
+      if (!vac || vac.atRisk <= 0) {
+        document.getElementById('uol-content').innerHTML = '<p class="text-sm text-slate-400">No hours at risk of forfeiture at year-end.</p>';
+        return;
+      }
+      document.getElementById('uol-content').innerHTML =
+        '<div class="space-y-3">' +
+        '<div class="flex justify-between"><span class="text-sm text-slate-600">Projected ' + RC.fmtDate(vac.boundaryDate) + '</span><span class="font-semibold">' + RC.fmtHours(vac.projectedBalance, profile) + '</span></div>' +
+        '<div class="flex justify-between"><span class="text-sm text-slate-600">Max carryover</span><span class="text-slate-500">' + RC.fmtHours(vac.limit, profile) + '</span></div>' +
+        '<div class="flex justify-between p-3 bg-orange-50 rounded-lg border border-orange-200"><span class="text-sm font-semibold text-orange-700">Use or lose</span><span class="font-bold text-orange-700">' + RC.fmtHours(vac.atRisk, profile) + '</span></div>' +
+        '<p class="text-xs text-slate-400">' + vac.daysUntilBoundary + ' days until ' + RC.fmtDate(vac.boundaryDate) + '</p>' +
+        '</div>';
+    }
+
+    function renderComp(expComp) {
+      if (!expComp.length) {
+        document.getElementById('comp-content').innerHTML = '<p class="text-sm text-slate-400">No comp time expiring within ' + (profile.settings.compExpirationWarningDays || 30) + ' days.</p>';
+        return;
+      }
+      document.getElementById('comp-content').innerHTML = expComp.map(function(b) {
+        return '<div class="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">' +
+          '<div><p class="text-sm font-medium text-slate-700">' + (b.label || 'Comp Block') + '</p>' +
+          '<p class="text-xs text-slate-400">Expires ' + RC.fmtDate(b.expiresOn) + (b.daysUntilExpiry !== null ? ' · ' + (b.daysUntilExpiry <= 0 ? 'Expired' : b.daysUntilExpiry + 'd left') : '') + '</p></div>' +
+          '<span class="font-semibold ' + (b.status === 'expired' ? 'text-slate-400' : 'text-amber-600') + '">' + RC.fmtHours(b.hoursRemaining, profile) + '</span></div>';
+      }).join('');
+    }
+
+    RC.setupModal('quick-add-modal');
+
+    function getEntryMode(prefix) {
+      var checked = document.querySelector('input[name="' + prefix + '-mode"]:checked');
+      return checked ? checked.value : 'actual';
+    }
+
+    function updateModeToggle(prefix) {
+      document.querySelectorAll('input[name="' + prefix + '-mode"]').forEach(function(input) {
+        var chip = input.parentElement.querySelector('.' + prefix + '-mode-option');
+        if (!chip) return;
+        chip.classList.toggle('bg-white', input.checked);
+        chip.classList.toggle('shadow-sm', input.checked);
+        chip.classList.toggle('text-slate-800', input.checked);
+      });
+    }
+
+    function updateQuickAddForm() {
+      var mode = getEntryMode('qa');
+      var action = document.getElementById('qa-action').value;
+      var workdayHours = RC.getWorkdayHours(profile);
+      var endDate = document.getElementById('qa-end-date').value;
+      var startDate = document.getElementById('qa-date').value;
+      var help = document.getElementById('qa-range-help');
+
+      document.getElementById('qa-hours-help').textContent = 'Default workday: ' + RC.fmtHours(workdayHours, profile) + '. For a date range with leave taken, one entry is created per workday.';
+
+      var labels = {
+        actual: { used: 'Leave taken', awarded: 'Credit awarded', forfeited: 'Hours forfeited' },
+        planned:{ used: 'Planned leave', awarded: 'Planned credit', forfeited: 'Planned forfeiture' }
+      };
+      Array.from(document.getElementById('qa-action').options).forEach(function(option) {
+        option.textContent = labels[mode][option.value] || option.textContent;
+      });
+
+      var showRangeHelp = action === 'used' && endDate && startDate && endDate > startDate;
+      help.classList.toggle('hidden', !showRangeHelp);
+      if (showRangeHelp) {
+        help.textContent = 'Range mode will skip weekends and observed holidays and create one ' + RC.fmtHours(workdayHours, profile) + ' entry per workday.';
+      }
+
+      updateModeToggle('qa');
+    }
+
+    document.getElementById('quick-add-btn').addEventListener('click', function() {
+      document.getElementById('qa-date').value = RC.todayISO();
+      document.getElementById('qa-end-date').value = '';
+      document.getElementById('qa-hours').value = RC.getWorkdayHours(profile);
+      document.getElementById('qa-action').value = 'used';
+      document.querySelector('input[name="qa-mode"][value="actual"]').checked = true;
+      updateQuickAddForm();
+      RC.openModal('quick-add-modal');
+    });
+
+    document.getElementById('quick-add-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var hours = parseFloat(document.getElementById('qa-hours').value);
+      var date  = document.getElementById('qa-date').value;
+      var endDate = document.getElementById('qa-end-date').value;
+      if (!date || !hours || hours <= 0) { RC.showToast('Enter a valid start date and hours.', 'warning'); return; }
+      if (endDate && endDate < date) { RC.showToast('End date must be on or after the start date.', 'warning'); return; }
+      var draft = {
+        startDate: date,
+        endDate: endDate || null,
+        leaveTypeId: document.getElementById('qa-type').value,
+        action: document.getElementById('qa-action').value,
+        hours: hours,
+        planned: getEntryMode('qa') === 'planned',
+        notes: document.getElementById('qa-notes').value.trim() || null
+      };
+      try {
+        RC.expandEntryDraft(profile, draft).forEach(function(tx) { RC.addTransaction(profile, tx); });
+      } catch (err) {
+        RC.showToast(err.message, 'warning');
+        return;
+      }
+      RC.saveProfile(profile);
+      RC.closeModal('quick-add-modal');
+      RC.showToast('Entry saved.', 'success');
+      render();
+    });
+
+    ['qa-action','qa-date','qa-end-date'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', updateQuickAddForm);
+    });
+    document.querySelectorAll('input[name="qa-mode"]').forEach(function(input) {
+      input.addEventListener('change', updateQuickAddForm);
+    });
+
+    projInput.addEventListener('change', render);
+    updateQuickAddForm();
+    render();
+    } // end else
+  </script>
+</body>
+</html>

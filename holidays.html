@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recess — Holidays</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div id="nav-root"></div>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <h1 class="text-2xl font-bold text-slate-800">Holiday Calendar</h1>
+      <div class="flex items-center gap-2">
+        <button id="prev-year" class="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50">
+          <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        </button>
+        <span id="year-label" class="text-lg font-semibold text-slate-700 w-16 text-center"></span>
+        <button id="next-year" class="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50">
+          <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-1">Observed Holidays</h2>
+        <p class="text-xs text-slate-500 mb-4">Uncheck holidays your employer does not observe.</p>
+        <div id="holiday-toggles" class="space-y-1"></div>
+        <div class="mt-4 pt-4 border-t border-slate-100 flex gap-3">
+          <button id="check-all"   class="text-xs text-sky-600 hover:underline">Check all</button>
+          <span class="text-slate-300">·</span>
+          <button id="uncheck-all" class="text-xs text-slate-400 hover:underline">Uncheck all</button>
+        </div>
+      </div>
+      <div class="lg:col-span-2">
+        <div id="calendar-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/accrual.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script>
+    var profile = RC.getProfile();
+    if (!RC.requireProfile(profile)) { /* redirecting */ }
+    else {
+
+    var currentYear = new Date().getFullYear();
+    var todayStr    = RC.todayISO();
+
+    function render() {
+      document.getElementById('year-label').textContent = currentYear;
+      renderToggles();
+      renderCalendar();
+    }
+
+    function renderToggles() {
+      var observed = profile.settings.holidays.observedSet;
+      var holidays = RC.getHolidayDates(currentYear, Object.keys(RC.HOLIDAY_DEFINITIONS), profile.settings.holidays.customHolidays);
+      document.getElementById('holiday-toggles').innerHTML = Object.entries(RC.HOLIDAY_DEFINITIONS).map(function(entry) {
+        var key = entry[0], def = entry[1];
+        var obs = observed.includes(key);
+        var h   = holidays.find(function(hh) { return hh.key === key; });
+        var dateStr = h ? ' — ' + new Date(h.observedDate + 'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '';
+        return '<label class="flex items-center gap-2.5 py-1.5 cursor-pointer group">' +
+          '<input type="checkbox" class="holiday-toggle rounded border-slate-300 text-sky-600" data-key="' + key + '" ' + (obs?'checked':'') + '>' +
+          '<span class="text-sm flex-1 ' + (obs?'text-slate-700':'text-slate-400') + '">' + def.shortLabel + '</span>' +
+          '<span class="text-xs text-slate-400">' + dateStr + '</span>' +
+          '</label>';
+      }).join('');
+
+      document.querySelectorAll('.holiday-toggle').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+          profile.settings.holidays.observedSet = Array.from(document.querySelectorAll('.holiday-toggle:checked')).map(function(c) { return c.dataset.key; });
+          RC.saveProfile(profile);
+          render();
+        });
+      });
+    }
+
+    function renderCalendar() {
+      var observed = profile.settings.holidays.observedSet;
+      var holidays = RC.getHolidayDates(currentYear, observed, profile.settings.holidays.customHolidays);
+      var hMap     = {};
+      holidays.forEach(function(h) { hMap[h.observedDate] = h; });
+
+      var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      var DOW    = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+      var html   = '';
+
+      for (var m = 0; m < 12; m++) {
+        var firstDay    = new Date(Date.UTC(currentYear, m, 1)).getUTCDay();
+        var daysInMonth = new Date(Date.UTC(currentYear, m + 1, 0)).getUTCDate();
+        var dayHtml     = DOW.map(function(d) { return '<div class="text-center text-xs font-medium text-slate-400 py-0.5">' + d + '</div>'; }).join('');
+
+        for (var i = 0; i < firstDay; i++) dayHtml += '<div></div>';
+
+        for (var d = 1; d <= daysInMonth; d++) {
+          var dateStr = currentYear + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+          var h       = hMap[dateStr];
+          var isToday = dateStr === todayStr;
+          var cls     = 'cal-day text-xs';
+          var title   = '';
+          if (isToday)    { cls += ' today'; }
+          else if (h)     { cls += ' holiday'; title = h.shortLabel; }
+          dayHtml += '<div class="' + cls + '" title="' + title + '">' + d + '</div>';
+        }
+
+        var monthH = holidays.filter(function(h) { return parseInt(h.observedDate.split('-')[1]) === m + 1; });
+        var hLabels = monthH.map(function(h) {
+          return '<div class="flex items-center gap-1.5 text-xs text-sky-700">' +
+            '<span class="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>' +
+            h.shortLabel + (h.isShifted ? ' <span class="text-slate-400">(obs.)</span>' : '') + '</div>';
+        }).join('');
+
+        html += '<div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">' +
+          '<h3 class="text-sm font-semibold text-slate-700 mb-2">' + MONTHS[m] + '</h3>' +
+          '<div class="cal-grid mb-2">' + dayHtml + '</div>' +
+          (hLabels ? '<div class="border-t border-slate-100 pt-2 space-y-0.5">' + hLabels + '</div>' : '') +
+          '</div>';
+      }
+
+      document.getElementById('calendar-grid').innerHTML = html;
+    }
+
+    document.getElementById('prev-year').addEventListener('click', function() { currentYear--; render(); });
+    document.getElementById('next-year').addEventListener('click', function() { currentYear++; render(); });
+    document.getElementById('check-all').addEventListener('click', function() {
+      profile.settings.holidays.observedSet = Object.keys(RC.HOLIDAY_DEFINITIONS);
+      RC.saveProfile(profile); render();
+    });
+    document.getElementById('uncheck-all').addEventListener('click', function() {
+      profile.settings.holidays.observedSet = [];
+      RC.saveProfile(profile); render();
+    });
+
+    render();
+    } // end else
+  </script>
+</body>
+</html>

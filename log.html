@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recess - Leave Log</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div id="nav-root"></div>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <h1 class="text-2xl font-bold text-slate-800">Leave Log</h1>
+      <button id="add-btn" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Entry
+      </button>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-5 flex flex-wrap gap-3 items-center">
+      <select id="filter-type" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
+        <option value="">All types</option>
+        <option value="vacation">Annual Leave</option>
+        <option value="sick">Sick Leave</option>
+        <option value="comp">Comp Time</option>
+      </select>
+      <select id="filter-action" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
+        <option value="">All actions</option>
+        <option value="used">Used</option>
+        <option value="awarded">Awarded</option>
+        <option value="forfeited">Forfeited</option>
+        <option value="expired">Expired</option>
+      </select>
+      <select id="filter-planned" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
+        <option value="">Actual + planned</option>
+        <option value="actual">Actual only</option>
+        <option value="planned">Planned only</option>
+      </select>
+      <input type="text" id="filter-search" placeholder="Search notes..." class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm flex-1 min-w-32">
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="text-left px-4 py-3 font-medium text-slate-500 w-36">Date</th>
+              <th class="text-left px-4 py-3 font-medium text-slate-500">Type</th>
+              <th class="text-left px-4 py-3 font-medium text-slate-500">Action</th>
+              <th class="text-right px-4 py-3 font-medium text-slate-500">Hours</th>
+              <th class="text-right px-4 py-3 font-medium text-slate-500">Balance After</th>
+              <th class="text-left px-4 py-3 font-medium text-slate-500">Notes</th>
+              <th class="px-4 py-3 w-20"></th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+      </div>
+      <div id="log-empty" class="hidden py-12 text-center text-slate-400">
+        <p class="font-medium text-slate-500">No entries found</p>
+        <p class="text-sm mt-1">Try adjusting your filters or add a new entry.</p>
+      </div>
+    </div>
+  </main>
+
+  <div id="entry-modal" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="modal-title" class="font-semibold text-slate-800">Add Entry</h3>
+        <button data-modal-close class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <form id="entry-form" class="px-6 py-5 space-y-4">
+        <input type="hidden" id="edit-id">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Entry Mode</label>
+          <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+            <label class="cursor-pointer"><input type="radio" name="e-mode" value="actual" class="sr-only" checked><span class="e-mode-option block rounded-lg px-3 py-2 text-center text-sm font-medium text-slate-600 bg-white shadow-sm">Actual</span></label>
+            <label class="cursor-pointer"><input type="radio" name="e-mode" value="planned" class="sr-only"><span class="e-mode-option block rounded-lg px-3 py-2 text-center text-sm font-medium text-slate-600">Planned</span></label>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Leave Type</label>
+            <select id="e-type" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="vacation">Annual Leave</option>
+              <option value="sick">Sick Leave</option>
+              <option value="comp">Comp Time</option>
+            </select>
+          </div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Entry Type</label>
+            <select id="e-action" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="used">Leave taken</option>
+              <option value="awarded">Credit awarded</option>
+              <option value="forfeited">Hours forfeited</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label><input type="date" id="e-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">End Date <span class="text-slate-400 font-normal">(optional)</span></label><input type="date" id="e-end-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Hours</label>
+          <input type="number" id="e-hours" min="0.25" step="0.25" value="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          <p id="e-hours-help" class="text-xs text-slate-400 mt-1"></p>
+        </div>
+        <div id="e-range-help" class="hidden rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800"></div>
+        <div id="e-edit-note" class="hidden rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">Editing only updates this single entry. Date ranges are available when adding new entries.</div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label><input type="text" id="e-notes" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+        <div class="flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 rounded-lg text-sm">Save</button>
+          <button type="button" data-modal-close class="flex-1 border border-slate-200 text-slate-700 font-medium py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/accrual.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/holidays.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/nav.js"></script>
+  <script>
+    var profile = RC.getProfile();
+    if (!RC.requireProfile(profile)) { /* redirecting */ }
+    else {
+
+    RC.setupModal('entry-modal');
+
+    var ltColors = { vacation:'text-sky-700 bg-sky-50', sick:'text-violet-700 bg-violet-50', comp:'text-amber-700 bg-amber-50' };
+
+    function getEntryMode(prefix) {
+      var checked = document.querySelector('input[name="' + prefix + '-mode"]:checked');
+      return checked ? checked.value : 'actual';
+    }
+
+    function updateModeToggle(prefix) {
+      document.querySelectorAll('input[name="' + prefix + '-mode"]').forEach(function(input) {
+        var chip = input.parentElement.querySelector('.' + prefix + '-mode-option');
+        if (!chip) return;
+        chip.classList.toggle('bg-white', input.checked);
+        chip.classList.toggle('shadow-sm', input.checked);
+        chip.classList.toggle('text-slate-800', input.checked);
+      });
+    }
+
+    function updateEntryForm() {
+      var mode = getEntryMode('e');
+      var action = document.getElementById('e-action').value;
+      var workdayHours = RC.getWorkdayHours(profile);
+      var startDate = document.getElementById('e-date').value;
+      var endDate = document.getElementById('e-end-date').value;
+      var isEdit = !!document.getElementById('edit-id').value;
+      var labels = {
+        actual: { used: 'Leave taken', awarded: 'Credit awarded', forfeited: 'Hours forfeited' },
+        planned:{ used: 'Planned leave', awarded: 'Planned credit', forfeited: 'Planned forfeiture' }
+      };
+      Array.from(document.getElementById('e-action').options).forEach(function(option) {
+        option.textContent = labels[mode][option.value] || option.textContent;
+      });
+      document.getElementById('e-hours-help').textContent = 'Default workday: ' + RC.fmtHours(workdayHours, profile) + '.';
+      var rangeHelp = document.getElementById('e-range-help');
+      var showRangeHelp = !isEdit && action === 'used' && endDate && startDate && endDate > startDate;
+      rangeHelp.classList.toggle('hidden', !showRangeHelp);
+      if (showRangeHelp) {
+        rangeHelp.textContent = 'Range mode will skip weekends and observed holidays and create one ' + RC.fmtHours(workdayHours, profile) + ' entry per workday.';
+      }
+      document.getElementById('e-end-date').disabled = isEdit;
+      document.getElementById('e-edit-note').classList.toggle('hidden', !isEdit);
+      updateModeToggle('e');
+    }
+
+    function getFilters() {
+      return {
+        type:    document.getElementById('filter-type').value,
+        action:  document.getElementById('filter-action').value,
+        planned: document.getElementById('filter-planned').value,
+        search:  document.getElementById('filter-search').value.toLowerCase()
+      };
+    }
+
+    function collapseLogRows(entries) {
+      var groups = {};
+      var rows = [];
+
+      entries.forEach(function(tx) {
+        if (!tx.rangeGroupId) {
+          rows.push({ kind: 'single', tx: tx, sortDate: tx.date });
+          return;
+        }
+
+        if (!groups[tx.rangeGroupId]) {
+          groups[tx.rangeGroupId] = {
+            kind: 'range',
+            id: tx.rangeGroupId,
+            leaveTypeId: tx.leaveTypeId,
+            action: tx.action,
+            planned: !!tx.planned,
+            notes: tx.notes || '',
+            startDate: tx.rangeStart || tx.date,
+            endDate: tx.rangeEnd || tx.date,
+            totalHours: 0,
+            balanceAfter: tx.balanceAfter ? tx.balanceAfter[tx.leaveTypeId] : null,
+            sortDate: tx.rangeEnd || tx.date,
+            entryCount: 0
+          };
+          rows.push(groups[tx.rangeGroupId]);
+        }
+
+        groups[tx.rangeGroupId].totalHours += tx.hours;
+        groups[tx.rangeGroupId].entryCount += 1;
+      });
+
+      return rows.sort(function(a, b) { return b.sortDate.localeCompare(a.sortDate); });
+    }
+
+    function renderTable() {
+      var enriched = RC.enrichTransactionsWithRunningBalance(profile);
+      var sorted   = enriched.slice().sort(function(a,b) { return b.date.localeCompare(a.date); });
+      var f        = getFilters();
+      var filtered = sorted.filter(function(tx) {
+        if (f.type   && tx.leaveTypeId !== f.type)   return false;
+        if (f.action && tx.action !== f.action)      return false;
+        if (f.planned === 'actual'  &&  tx.planned)  return false;
+        if (f.planned === 'planned' && !tx.planned)  return false;
+        if (f.search  && !(tx.notes||'').toLowerCase().includes(f.search)) return false;
+        return true;
+      });
+
+      var tbody = document.getElementById('log-tbody');
+      var empty = document.getElementById('log-empty');
+
+      if (!filtered.length) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+
+      var rows = collapseLogRows(filtered);
+
+      tbody.innerHTML = rows.map(function(row) {
+        var tx = row.tx;
+        var isRange = row.kind === 'range';
+        var action = isRange ? row.action : tx.action;
+        var leaveTypeId = isRange ? row.leaveTypeId : tx.leaveTypeId;
+        var planned = isRange ? row.planned : !!tx.planned;
+        var debit = ['used','forfeited','expired'].includes(action);
+        var balAfter = isRange ? row.balanceAfter : (tx.balanceAfter ? tx.balanceAfter[tx.leaveTypeId] : null);
+        var isNeg = balAfter !== null && balAfter < 0;
+        var rowCls = (planned && row.sortDate > RC.todayISO()) ? 'bg-sky-50/30' : '';
+        var dateLabel = isRange ? (RC.fmtDate(row.startDate) + ' - ' + RC.fmtDate(row.endDate)) : RC.fmtDate(tx.date);
+        var noteLabel = isRange ? ((row.notes ? row.notes + ' ' : '') + '(' + row.entryCount + ' workdays)') : (tx.notes || '');
+
+        return '<tr class="' + rowCls + ' border-b border-slate-100 hover:bg-slate-50 transition-colors">' +
+          '<td class="px-4 py-3 text-slate-600 whitespace-nowrap">' + dateLabel +
+            (planned ? ' <span class="text-xs bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded font-medium">Planned</span>' : '') +
+            (isRange ? ' <span class="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">Range</span>' : '') + '</td>' +
+          '<td class="px-4 py-3"><span class="text-xs font-medium px-2 py-0.5 rounded-full ' + (ltColors[leaveTypeId]||'text-slate-700 bg-slate-100') + '">' + (RC.LEAVE_TYPE_LABELS[leaveTypeId]||leaveTypeId) + '</span></td>' +
+          '<td class="px-4 py-3 ' + (RC.ACTION_COLORS[action]||'text-slate-600') + ' font-medium">' + (RC.ACTION_LABELS[action]||action) + '</td>' +
+          '<td class="px-4 py-3 text-right font-medium ' + (debit?'text-red-600':'text-emerald-600') + '">' + (debit?'−':'+') + RC.fmtHours(isRange ? row.totalHours : tx.hours, profile) + '</td>' +
+          '<td class="px-4 py-3 text-right ' + (isNeg?'text-red-600 font-semibold':'text-slate-600') + '">' + (balAfter !== null ? RC.fmtHours(balAfter, profile) : '—') + (isNeg?' ⚠':'') + '</td>' +
+          '<td class="px-4 py-3 text-slate-500 max-w-xs truncate">' + noteLabel + '</td>' +
+          '<td class="px-4 py-3"><div class="flex gap-1 justify-end">' +
+            (isRange ? '' : '<button class="edit-btn p-1.5 text-slate-400 hover:text-sky-600 rounded" data-id="' + tx.id + '" title="Edit"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg></button>') +
+            '<button class="del-btn p-1.5 text-slate-400 hover:text-red-600 rounded" data-id="' + (isRange ? row.id : tx.id) + '" data-kind="' + row.kind + '" title="Delete"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.11 0 00-7.5 0"/></svg></button>' +
+          '</div></td></tr>';
+      }).join('');
+
+      document.querySelectorAll('.edit-btn').forEach(function(btn) { btn.addEventListener('click', function() { openEdit(btn.dataset.id); }); });
+      document.querySelectorAll('.del-btn').forEach(function(btn) { btn.addEventListener('click', function() { deleteTx(btn.dataset.id, btn.dataset.kind); }); });
+    }
+
+    function openAdd() {
+      document.getElementById('modal-title').textContent = 'Add Entry';
+      document.getElementById('edit-id').value  = '';
+      document.getElementById('e-date').value   = RC.todayISO();
+      document.getElementById('e-end-date').value = '';
+      document.getElementById('e-hours').value  = RC.getWorkdayHours(profile);
+      document.getElementById('e-type').value   = 'vacation';
+      document.getElementById('e-action').value = 'used';
+      document.querySelector('input[name="e-mode"][value="actual"]').checked = true;
+      document.getElementById('e-notes').value  = '';
+      updateEntryForm();
+      RC.openModal('entry-modal');
+    }
+
+    function openEdit(id) {
+      var tx = profile.transactions.find(function(t) { return t.id === id; });
+      if (!tx) return;
+      document.getElementById('modal-title').textContent = 'Edit Entry';
+      document.getElementById('edit-id').value  = tx.id;
+      document.getElementById('e-date').value   = tx.date;
+      document.getElementById('e-end-date').value = '';
+      document.getElementById('e-hours').value  = tx.hours;
+      document.getElementById('e-type').value   = tx.leaveTypeId;
+      document.getElementById('e-action').value = tx.action;
+      document.querySelector('input[name="e-mode"][value="' + (tx.planned ? 'planned' : 'actual') + '"]').checked = true;
+      document.getElementById('e-notes').value  = tx.notes || '';
+      updateEntryForm();
+      RC.openModal('entry-modal');
+    }
+
+    function deleteTx(id, kind) {
+      if (kind === 'range') {
+        if (!confirm('Delete this entire leave range?')) return;
+        profile.transactions = profile.transactions.filter(function(t) { return t.rangeGroupId !== id; });
+      } else {
+        if (!confirm('Delete this entry?')) return;
+        RC.deleteTransaction(profile, id);
+      }
+      RC.saveProfile(profile);
+      renderTable();
+      RC.showToast(kind === 'range' ? 'Leave range deleted.' : 'Entry deleted.', 'info');
+    }
+
+    document.getElementById('add-btn').addEventListener('click', openAdd);
+
+    document.getElementById('entry-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var id     = document.getElementById('edit-id').value;
+      var date   = document.getElementById('e-date').value;
+      var endDate = document.getElementById('e-end-date').value;
+      var hours  = parseFloat(document.getElementById('e-hours').value);
+      if (!date || !hours || hours <= 0) { RC.showToast('Enter a valid start date and hours.', 'warning'); return; }
+      if (endDate && endDate < date) { RC.showToast('End date must be on or after the start date.', 'warning'); return; }
+      var draft = {
+        startDate: date,
+        endDate: endDate || null,
+        hours: hours,
+        leaveTypeId: document.getElementById('e-type').value,
+        action: document.getElementById('e-action').value,
+        planned: getEntryMode('e') === 'planned',
+        notes: document.getElementById('e-notes').value.trim() || null
+      };
+      try {
+        if (id) {
+          var update = RC.expandEntryDraft(profile, draft, { isEdit: true })[0];
+          RC.updateTransaction(profile, id, update);
+          RC.showToast('Entry updated.', 'success');
+        } else {
+          RC.expandEntryDraft(profile, draft).forEach(function(tx) { RC.addTransaction(profile, tx); });
+          RC.showToast('Entry added.', 'success');
+        }
+      } catch (err) {
+        RC.showToast(err.message, 'warning');
+        return;
+      }
+      RC.saveProfile(profile);
+      RC.closeModal('entry-modal');
+      renderTable();
+    });
+
+    ['e-action','e-date','e-end-date'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', updateEntryForm);
+    });
+    document.querySelectorAll('input[name="e-mode"]').forEach(function(input) {
+      input.addEventListener('change', updateEntryForm);
+    });
+
+    ['filter-type','filter-action','filter-planned','filter-search'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', renderTable);
+    });
+
+    updateEntryForm();
+    renderTable();
+    }
+  </script>
+</body>
+</html>
