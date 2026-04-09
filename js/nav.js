@@ -13,31 +13,31 @@ RC.renderNav = function() {
     { href:'settings.html', label:'Settings',  icon:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
   ];
 
-  const BELL = '<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>';
+  const BELL = '<img src="assets/recess_icon.svg" class="w-7 h-7" alt="Recess logo" />';
 
   const path    = window.location.pathname.split('/').pop() || 'index.html';
   const current = path === '' ? 'index.html' : path;
 
   function link(item) {
     const active = item.href === current;
-    const cls    = 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-white/20 text-white' : 'text-sky-100 hover:bg-white/10 hover:text-white');
+    const cls    = 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-forest text-cream' : 'text-cream hover:bg-forest hover:text-cream');
     return '<a href="' + item.href + '" class="' + cls + '"><svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="' + item.icon + '"/></svg><span>' + item.label + '</span></a>';
   }
 
   function mlink(item) {
     const active = item.href === current;
-    const cls    = 'flex items-center gap-3 px-4 py-3 text-sm font-medium ' + (active ? 'bg-sky-800 text-white' : 'text-sky-100 hover:bg-sky-800');
+    const cls    = 'flex items-center gap-3 px-4 py-3 text-sm font-medium ' + (active ? 'bg-forest text-cream' : 'text-cream hover:bg-forest');
     return '<a href="' + item.href + '" class="' + cls + '"><svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="' + item.icon + '"/></svg>' + item.label + '</a>';
   }
 
   const html = [
-    '<header class="fixed top-0 left-0 right-0 z-50 bg-sky-700 shadow-lg">',
+    '<header class="fixed top-0 left-0 right-0 z-50 brand-nav shadow-lg">',
     '<div class="max-w-7xl mx-auto px-4"><div class="flex items-center justify-between h-16">',
-    '<a href="index.html" class="flex items-center gap-2 text-white hover:opacity-90">' + BELL + '<span class="text-xl font-bold tracking-tight">Recess</span></a>',
+    '<a href="index.html" class="brand-logo hover:opacity-90">' + BELL + '<span class="text-xl tracking-tight">Recess</span></a>',
     '<nav class="hidden md:flex items-center gap-1">' + NAV_ITEMS.map(link).join('') + '</nav>',
     '<button id="mobile-menu-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>',
     '</div></div>',
-    '<div id="mobile-menu" class="md:hidden hidden border-t border-sky-600 bg-sky-700"><div class="flex flex-col py-1">' + NAV_ITEMS.map(mlink).join('') + '</div></div>',
+    '<div id="mobile-menu" class="md:hidden hidden brand-mobile-menu"><div class="flex flex-col py-1">' + NAV_ITEMS.map(mlink).join('') + '</div></div>',
     '</header>',
     '<div class="h-16"></div>'
   ].join('');

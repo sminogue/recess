@@ -1,5 +1,100 @@
 /* app.css — Custom styles layered on Tailwind */
 
+/* Brand variables (Recess) */
+:root {
+  --brand-forest: #2E4A3D;
+  --brand-cream: #F4EBDD;
+  --brand-sage:  #6F806F; /* darkened for better contrast */
+  --brand-clay:  #8C4E3A; /* darkened for better contrast */
+  --brand-dark:  #1F2A24;
+}
+
+/* Apply canvas and default text color from brand */
+body { background-color: var(--brand-cream); color: var(--brand-dark); }
+
+/* Brand navigation/header styles */
+.brand-nav { background: var(--brand-forest); color: var(--brand-cream); }
+.brand-nav a { color: rgba(244,235,221,0.95); }
+.brand-nav .brand-logo { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--brand-cream); }
+.brand-mobile-menu { border-top: 1px solid rgba(46,74,61,0.15); background: var(--brand-forest); }
+
+/* Small accent helpers */
+.brand-accent { color: var(--brand-clay); }
+
+/* Buttons and cards using brand palette */
+.brand-btn-primary {
+  background: var(--brand-forest);
+  color: var(--brand-cream);
+}
+.brand-btn-primary:hover { background: color-mix(in srgb, var(--brand-forest) 85%, black 15%); }
+
+.brand-btn-ghost {
+  background: transparent;
+  color: var(--brand-forest);
+  border: 1px solid rgba(46,74,61,0.08);
+}
+
+.brand-active { background: var(--brand-forest); color: var(--brand-cream); }
+
+.card {
+  background: white;
+  border: 1px solid rgba(46,74,61,0.06);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 0 rgba(31,42,36,0.02);
+}
+
+/* Text and background helpers for brand palette */
+.text-forest { color: var(--brand-forest) !important; }
+.text-forest-muted { color: rgba(31,42,36,0.6) !important; }
+.text-clay { color: var(--brand-clay) !important; }
+.text-sage { color: var(--brand-sage) !important; }
+.text-cream { color: var(--brand-cream) !important; }
+
+.bg-forest { background: var(--brand-forest) !important; }
+.bg-clay { background: var(--brand-clay) !important; }
+.bg-cream-panel { background: rgba(244,235,221,0.6) !important; }
+.border-cream { border-color: rgba(46,74,61,0.06) !important; }
+
+/* Button hover/accessibility helpers */
+.brand-btn-primary { background: var(--brand-forest); color: var(--brand-cream); border: none; }
+.brand-btn-primary { transition: background .12s ease, transform .08s ease, box-shadow .12s ease; }
+.brand-btn-primary:hover { filter: brightness(0.94); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(46,74,61,0.10); }
+.brand-btn-primary:active { transform: translateY(0); }
+.brand-btn-primary:focus { outline: none; box-shadow: 0 0 0 3px rgba(46,74,61,0.14); }
+
+.brand-btn-ghost:hover { background: rgba(169,184,165,0.06); }
+
+/* Small utility */
+.muted { color: rgba(31,42,36,0.5); }
+
+/* Light variants for subtle backgrounds */
+.bg-clay-50 { background: rgba(201,123,99,0.12) !important; }
+.bg-sage-50 { background: rgba(169,184,165,0.10) !important; }
+.border-clay-100 { border-color: rgba(201,123,99,0.14) !important; }
+
+/* Calendar day tweaks to use brand palette */
+.cal-day.holiday {
+  background: rgba(201,123,99,0.08);
+  color: var(--brand-dark);
+  font-weight: 600;
+}
+
+.cal-day.today {
+  background: var(--brand-forest);
+  color: var(--brand-cream);
+  font-weight: 700;
+}
+
+/* Badges */
+.badge { display:inline-block; padding:0.125rem 0.5rem; border-radius:999px; font-size:0.75rem; font-weight:600; vertical-align:middle; }
+.badge-forest { background: var(--brand-forest); color: var(--brand-cream); }
+.badge-clay { background: var(--brand-clay); color: var(--brand-cream); }
+.badge-muted { background: rgba(31,42,36,0.06); color: var(--brand-dark); border: 1px solid rgba(31,42,36,0.04); }
+
+/* small helper for pill-style preset buttons */
+.preset-btn { transition: background .12s ease, color .12s ease, transform .08s ease; }
+.preset-btn:hover { transform: translateY(-1px); }
+
 /* Smooth scrollbar */
 * { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
 *::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -31,7 +126,7 @@ main { animation: fadeIn 0.15s ease-out; }
 /* Input focus ring override to match sky brand */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(14,165,233,0.4);
+  box-shadow: 0 0 0 3px rgba(46,74,61,0.12);
 }
 
 /* Table striping */

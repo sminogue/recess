@@ -33,7 +33,7 @@ RC.fmtDateShort = function(dateStr) {
 RC.ACTION_LABELS = { used:'Used', accrued:'Accrued', awarded:'Awarded', forfeited:'Forfeited', expired:'Expired' };
 RC.LEAVE_TYPE_LABELS = { vacation:'Annual Leave', sick:'Sick Leave', comp:'Comp Time' };
 RC.ACTION_COLORS = {
-  used:'text-red-600', accrued:'text-emerald-600', awarded:'text-sky-600',
+  used:'text-red-600', accrued:'text-emerald-600', awarded:'text-dark',
   forfeited:'text-orange-600', expired:'text-slate-500'
 };
 
@@ -81,7 +81,7 @@ RC.setupModal = function(id) {
 };
 
 RC.progressBar = function(value, max, colorClass) {
-  colorClass = colorClass || 'bg-sky-500';
+  colorClass = colorClass || 'bg-forest';
   const pct  = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
   return '<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div class="' + colorClass + ' h-2 rounded-full transition-all duration-500" style="width:' + pct + '%"></div></div>';
 };

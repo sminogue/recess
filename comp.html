@@ -16,15 +16,15 @@
         <h1 class="text-2xl font-bold text-slate-800">Comp Time</h1>
         <p class="text-sm text-slate-500 mt-0.5">Oldest blocks used first (FIFO). Blocks expiring within <span id="warn-days">30</span> days are flagged.</p>
       </div>
-      <button id="add-btn" class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
+      <button id="add-btn" class="flex items-center gap-2 brand-btn-primary text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
         Add Comp Block
       </button>
     </div>
 
-    <div class="bg-white border border-amber-100 rounded-xl shadow-sm p-5 mb-5">
+    <div class="bg-white border border-clay-100 rounded-xl shadow-sm p-5 mb-5">
       <div class="grid grid-cols-3 gap-4 text-center">
-        <div><p class="text-xs text-slate-500 mb-1">Total Balance</p><p id="total-bal" class="text-2xl font-bold text-amber-600">—</p></div>
+        <div><p class="text-xs text-slate-500 mb-1">Total Balance</p><p id="total-bal" class="text-2xl font-bold text-forest">—</p></div>
         <div><p class="text-xs text-slate-500 mb-1">Active Blocks</p><p id="active-count" class="text-2xl font-bold text-slate-700">—</p></div>
         <div><p class="text-xs text-slate-500 mb-1">Expiring Soon</p><p id="expiring-count" class="text-2xl font-bold text-orange-500">—</p></div>
       </div>
@@ -56,7 +56,7 @@
         </div>
         <div><label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label><input type="text" id="c-notes" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
         <div class="flex gap-3 pt-2">
-          <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 rounded-lg text-sm">Save</button>
+          <button type="submit" class="flex-1 brand-btn-primary text-white font-medium py-2 rounded-lg text-sm">Save</button>
           <button type="button" data-modal-close class="flex-1 border border-slate-200 text-slate-700 font-medium py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
         </div>
       </form>
@@ -118,15 +118,15 @@
     }
 
     function blockCard(b) {
-      var sc = { active:'border-emerald-100 bg-white', expiring:'border-amber-200 bg-amber-50', expired:'border-slate-200 bg-slate-50' };
-      var bc = { active:'bg-emerald-100 text-emerald-700', expiring:'bg-amber-100 text-amber-700', expired:'bg-slate-100 text-slate-500' };
+      var sc = { active:'border-sage-100 bg-white', expiring:'border-clay-200 bg-clay-50', expired:'border-slate-200 bg-slate-50' };
+      var bc = { active:'badge-forest', expiring:'badge-clay', expired:'badge-muted' };
       var sl = { active:'Active', expiring:'Expiring Soon', expired:'Expired' };
       var pct = b.hoursOriginal > 0 ? Math.round(b.hoursRemaining / b.hoursOriginal * 100) : 0;
       var barColor = b.status === 'expired' ? 'bg-slate-300' : b.status === 'expiring' ? 'bg-amber-400' : 'bg-amber-500';
       return '<div class="border ' + (sc[b.status]||sc.active) + ' rounded-xl shadow-sm p-5" data-block-id="' + b.id + '">' +
         '<div class="flex items-start justify-between mb-3">' +
           '<div><div class="flex items-center gap-2 mb-0.5"><span class="font-semibold text-slate-800">' + (b.label||'Comp Block') + '</span>' +
-          '<span class="text-xs px-2 py-0.5 rounded-full font-medium ' + (bc[b.status]||bc.active) + '">' + (sl[b.status]||b.status) + '</span></div>' +
+          '<span class="badge ' + (bc[b.status]||'badge-muted') + '">' + (sl[b.status]||b.status) + '</span></div>' +
           '<p class="text-xs text-slate-400">Earned ' + RC.fmtDate(b.dateEarned) +
             (b.expiresOn ? ' · Expires ' + RC.fmtDate(b.expiresOn) : '') +
             (b.daysUntilExpiry !== null && b.status !== 'expired' ? ' · <span class="' + (b.status==='expiring'?'text-amber-600 font-medium':'') + '">' + b.daysUntilExpiry + 'd left</span>' : '') +

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recess — Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="assets/recess_icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -14,15 +15,15 @@
   <main class="max-w-7xl mx-auto px-4 py-6">
 
     <!-- Privacy notice (dismissable, first visit only) -->
-    <div id="privacy-banner" class="mb-6 bg-sky-50 border border-sky-200 rounded-xl px-5 py-4 flex items-start gap-3 hidden">
-      <svg class="w-5 h-5 text-sky-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <div id="privacy-banner" class="mb-6 bg-cream-panel border border-cream rounded-xl px-5 py-4 flex items-start gap-3 hidden">
+      <svg class="w-5 h-5 text-forest shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
       </svg>
       <div class="flex-1 text-sm">
-        <span class="font-semibold text-sky-800">Your data never leaves your device.</span>
-        <span class="text-sky-700"> Recess has no server, no account, and no telemetry. Everything stays in your browser. Export your data regularly as a backup.</span>
+        <span class="font-semibold text-forest">Your data never leaves your device.</span>
+        <span class="text-forest-muted"> Recess has no server, no account, and no telemetry. Everything stays in your browser. Export your data regularly as a backup.</span>
       </div>
-      <button id="dismiss-privacy" class="text-sky-400 hover:text-sky-600 shrink-0">
+      <button id="dismiss-privacy" class="text-forest hover:text-forest shrink-0">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
@@ -41,7 +42,7 @@
           <label class="text-xs text-slate-500 font-medium whitespace-nowrap">Project to:</label>
           <input type="date" id="projection-date" class="text-sm border-none bg-transparent p-0 focus:outline-none text-slate-700 font-medium">
         </div>
-        <button id="quick-add-btn" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
+        <button id="quick-add-btn" class="flex items-center gap-2 brand-btn-primary text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
           Log Time
         </button>
@@ -116,13 +117,13 @@
           <input type="number" id="qa-hours" min="0.25" step="0.25" value="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
           <p id="qa-hours-help" class="text-xs text-slate-400 mt-1"></p>
         </div>
-        <div id="qa-range-help" class="hidden rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800"></div>
+        <div id="qa-range-help" class="hidden rounded-lg border border-cream bg-cream-panel px-3 py-2 text-xs text-forest"></div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label>
           <input type="text" id="qa-notes" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
         </div>
         <div class="flex gap-3 pt-2">
-          <button type="submit" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 rounded-lg text-sm transition-colors">Save</button>
+          <button type="submit" class="flex-1 brand-btn-primary text-white font-medium py-2 rounded-lg text-sm transition-colors">Save</button>
           <button type="button" data-modal-close class="flex-1 border border-slate-200 text-slate-700 font-medium py-2 rounded-lg text-sm hover:bg-slate-50 transition-colors">Cancel</button>
         </div>
       </form>
@@ -171,7 +172,7 @@
 
     function renderCards(todayBal, projBal, uncappedProjBal, nextAcc, projDate, uolRisks) {
       var types = [
-        { id:'vacation', label:'Annual Leave', color:'sky',    barColor:'bg-sky-500' },
+        { id:'vacation', label:'Annual Leave', color:'forest', barColor:'bg-forest' },
         { id:'sick',     label:'Sick Leave',   color:'violet', barColor:'bg-violet-500' },
         { id:'comp',     label:'Comp Time',    color:'amber',  barColor:'bg-amber-500' }
       ];

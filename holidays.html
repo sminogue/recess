@@ -30,7 +30,7 @@
         <p class="text-xs text-slate-500 mb-4">Uncheck holidays your employer does not observe.</p>
         <div id="holiday-toggles" class="space-y-1"></div>
         <div class="mt-4 pt-4 border-t border-slate-100 flex gap-3">
-          <button id="check-all"   class="text-xs text-sky-600 hover:underline">Check all</button>
+          <button id="check-all"   class="text-xs text-forest hover:underline">Check all</button>
           <span class="text-slate-300">·</span>
           <button id="uncheck-all" class="text-xs text-slate-400 hover:underline">Uncheck all</button>
         </div>
@@ -70,9 +70,9 @@
         var h   = holidays.find(function(hh) { return hh.key === key; });
         var dateStr = h ? ' — ' + new Date(h.observedDate + 'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}) : '';
         return '<label class="flex items-center gap-2.5 py-1.5 cursor-pointer group">' +
-          '<input type="checkbox" class="holiday-toggle rounded border-slate-300 text-sky-600" data-key="' + key + '" ' + (obs?'checked':'') + '>' +
+          '<input type="checkbox" class="holiday-toggle rounded border-slate-300 text-forest" data-key="' + key + '" ' + (obs?'checked':'') + '>' +
           '<span class="text-sm flex-1 ' + (obs?'text-slate-700':'text-slate-400') + '">' + def.shortLabel + '</span>' +
-          '<span class="text-xs text-slate-400">' + dateStr + '</span>' +
+          '<span class="badge badge-muted">' + dateStr + '</span>' +
           '</label>';
       }).join('');
 
@@ -115,9 +115,9 @@
 
         var monthH = holidays.filter(function(h) { return parseInt(h.observedDate.split('-')[1]) === m + 1; });
         var hLabels = monthH.map(function(h) {
-          return '<div class="flex items-center gap-1.5 text-xs text-sky-700">' +
-            '<span class="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>' +
-            h.shortLabel + (h.isShifted ? ' <span class="text-slate-400">(obs.)</span>' : '') + '</div>';
+          return '<div class="flex items-center gap-1.5 text-xs text-forest-muted">' +
+            '<span class="w-1.5 h-1.5 rounded-full bg-clay shrink-0"></span>' +
+            h.shortLabel + (h.isShifted ? ' <span class="badge badge-muted">(obs.)</span>' : '') + '</div>';
         }).join('');
 
         html += '<div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">' +
