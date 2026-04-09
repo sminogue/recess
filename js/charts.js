@@ -59,6 +59,14 @@ RC.timelineChartOptions = function(displayUnits) {
         }
       },
       tooltip: {
+        filter: function(ctx, index, items) {
+          const baseLabel = ctx.dataset.label.split(' (')[0];
+          return !items.slice(0, index).some(function(prev) {
+            return prev.label === ctx.label &&
+              prev.parsed.y === ctx.parsed.y &&
+              prev.dataset.label.split(' (')[0] === baseLabel;
+          });
+        },
         callbacks: {
           title: function(ctx) { return ctx[0] ? RC.fmtDate(ctx[0].label) : ''; },
           label: function(ctx) {
