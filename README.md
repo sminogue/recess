@@ -25,7 +25,7 @@ Recess runs entirely in your browser — no account, no install, no server. Open
 
 If you have already used Recess on another device and exported a backup, you can skip the wizard entirely by choosing **Restore from backup instead** at the top of the first step.
 
-![The welcome wizard Step 1 showing the Restore from backup option at the top and the name and employer fields below](screen-shots/wizard-step-1.png)
+<img src="screen-shots/wizard-step-1.png" alt="The welcome wizard Step 1 showing the Restore from backup option at the top and the name and employer fields below" width="900">
 
 ---
 
@@ -40,7 +40,7 @@ Enter your display name and choose your employer type:
 
 If you have a backup file from a previous device, click **Restore from backup instead** to skip all remaining steps.
 
-![Step 1 of the wizard with the employer type dropdown open](screen-shots/wizard-employer-dropdown.png)
+<img src="screen-shots/wizard-employer-dropdown.png" alt="Step 1 of the wizard with the employer type dropdown open" width="900">
 
 ---
 
@@ -58,7 +58,7 @@ Sick leave always accrues at 4 hours per pay period regardless of tenure.
 
 **Custom employers:** Enter the fixed number of hours per pay period for annual leave and sick leave. You can also set the maximum annual leave carryover cap (use-or-lose limit). Leave the cap blank if your employer has no limit.
 
-![Step 2 with the custom fields visible (annual leave rate, sick leave rate, max carryover)](screen-shots/wizard-step-2-other-employer.png)
+<img src="screen-shots/wizard-step-2-other-employer.png" alt="Step 2 with the custom fields visible (annual leave rate, sick leave rate, max carryover)" width="900">
 
 ---
 
@@ -74,7 +74,7 @@ This is the most important step to get right. You are entering the balance you c
 
 > ⚠️ Using the wrong date or the post-accrual balance will shift all future projections by one pay period of accrual. When in doubt, use the beginning balance and the start date of the pay period.
 
-![Step 3 with example values filled in for annual, sick, and comp balances and an as-of date](screen-shots/wizard-step-3.png)
+<img src="screen-shots/wizard-step-3.png" alt="Step 3 with example values filled in for annual, sick, and comp balances and an as-of date" width="900">
 
 ---
 
@@ -91,7 +91,7 @@ Choose your pay frequency and enter an **anchor date** — any date that you kno
 
 A preview of your next three upcoming pay period start dates is shown so you can confirm the schedule looks right before finishing.
 
-![Step 4 showing the frequency dropdown, anchor date field, and the pay period preview](screen-shots/wizard-step-4.png)
+<img src="screen-shots/wizard-step-4.png" alt="Step 4 showing the frequency dropdown, anchor date field, and the pay period preview" width="900">
 
 ---
 
@@ -103,7 +103,7 @@ After finishing the wizard you land on the **Dashboard**, where your current bal
 
 ### Dashboard
 
-![The full dashboard showing balance cards, use-or-lose panel, and comp time expiring panel](screen-shots/dashboard.png)
+<img src="screen-shots/dashboard.png" alt="The full dashboard showing balance cards, use-or-lose panel, and comp time expiring panel" width="900">
 
 The dashboard is your home base. It shows:
 
@@ -117,9 +117,9 @@ The dashboard is your home base. It shows:
 
 ### Leave Log
 
-![The Leave Log in list view with a mix of actual and planned entries visible](screen-shots/leave-log-list.png)
+<img src="screen-shots/leave-log-list.png" alt="The Leave Log in list view with a mix of actual and planned entries visible" width="760">
 
-![The Leave Log in calendar view showing a month with leave entries](screen-shots/leave-log-calendar.png)
+<img src="screen-shots/leave-log-calendar.png" alt="The Leave Log in calendar view showing a month with leave entries" width="760">
 
 The leave log is a complete history of all your leave transactions. You can switch between **List** and **Calendar** views using the tabs at the top.
 
@@ -135,7 +135,7 @@ The leave log is a complete history of all your leave transactions. You can swit
 
 ### Timeline
 
-![The Timeline page showing the balance chart with all three leave types plotted](screen-shots/timeline.png)
+<img src="screen-shots/timeline.png" alt="The Timeline page showing the balance chart with all three leave types plotted" width="900">
 
 The Timeline shows a chart of your leave balances over time — past and projected — for all three leave types. Use this to visualize the impact of planned leave on your balances across a date range.
 
@@ -143,7 +143,7 @@ The Timeline shows a chart of your leave balances over time — past and project
 
 ### Comp Time
 
-![The Comp Time page showing one active block and one expiring-soon block](screen-shots/comp-time.png)
+<img src="screen-shots/comp-time.png" alt="The Comp Time page showing one active block and one expiring-soon block" width="900">
 
 Comp time is tracked as individual **blocks** rather than a single running total. Each block has:
 
@@ -160,7 +160,7 @@ To add comp time, use the **Add Comp Block** button on this page — not the das
 
 ### Holidays
 
-![The Holidays page showing the list of federal holidays with some unchecked](screen-shots/holidays.png)
+<img src="screen-shots/holidays.png" alt="The Holidays page showing the list of federal holidays with some unchecked" width="900">
 
 Recess uses holiday data when expanding date ranges into individual daily entries (e.g. logging a week of annual leave skips holidays automatically). The Holidays page lets you check or uncheck which federal holidays your employer observes.
 
@@ -168,7 +168,7 @@ Recess uses holiday data when expanding date ranges into individual daily entrie
 
 ### Settings
 
-![The Settings page with the Other / Custom employer preset selected, showing the accrual rate fields](screen-shots/settings-other-custom.png)
+<img src="screen-shots/settings-other-custom.png" alt="The Settings page with the Other / Custom employer preset selected, showing the accrual rate fields" width="900">
 
 Settings lets you adjust everything you configured in the wizard, plus additional options:
 
@@ -194,7 +194,7 @@ Settings lets you adjust everything you configured in the wizard, plus additiona
 
 Future-dated entries are automatically marked as **Planned**. They count against your projected balance but are clearly flagged in the log.
 
-![The Log Leave modal with a date range filled in and the range-mode info message visible](screen-shots/log-time.png)
+<img src="screen-shots/log-time.png" alt="The Log Leave modal with a date range filled in and the range-mode info message visible" width="640">
 
 ---
 
@@ -219,7 +219,7 @@ Use this to record a manual balance correction — for example, if HR granted ex
 3. Enter a label (optional but helpful), the date earned, the hours, and the expiry date.
 4. Click **Save**.
 
-![The Add Comp Block view with fields for label, date earned, hours, and expiry date](screen-shots/comp-time-add.png)
+<img src="screen-shots/comp-time-add.png" alt="The Add Comp Block view with fields for label, date earned, hours, and expiry date" width="640">
 
 The block will appear in your comp balance immediately. If it expires within your warning window it will be flagged on both the Comp page and the Dashboard.
 
