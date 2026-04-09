@@ -79,7 +79,6 @@
         <button data-modal-close class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
       <form id="quick-add-form" class="px-6 py-5 space-y-4">
-        <!-- Entry Mode removed: planned is inferred from start date (future = planned) -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Leave Type</label>
           <select id="qa-type" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
@@ -88,20 +87,17 @@
             <option value="comp">Comp Time</option>
           </select>
         </div>
-        <div>
-          <div class="flex items-center justify-between">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Entry Type</label>
-            <button type="button" id="qa-advanced-toggle" class="text-xs text-slate-500 hover:text-slate-700">Show advanced</button>
-          </div>
+        <div id="qa-action-section">
           <div id="qa-action-wrapper" class="hidden">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Entry Type</label>
             <select id="qa-action" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
               <option value="used">Leave taken</option>
               <option value="awarded">Credit awarded</option>
-              <option value="forfeited">Hours forfeited</option>
             </select>
           </div>
+          <button type="button" id="qa-adjust-toggle" class="text-xs text-forest hover:underline mt-0.5">Awarding or adjusting time instead?</button>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div id="qa-date-row" class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
             <input type="date" id="qa-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
@@ -171,9 +167,9 @@
 
     function renderCards(todayBal, projBal, uncappedProjBal, nextAcc, projDate, uolRisks) {
       var types = [
-        { id:'vacation', label:'Annual Leave', color:'forest', barColor:'bg-forest' },
-        { id:'sick',     label:'Sick Leave',   color:'violet', barColor:'bg-violet-500' },
-        { id:'comp',     label:'Comp Time',    color:'amber',  barColor:'bg-amber-500' }
+        { id:'vacation', label:'Annual Leave', borderColor:'border-cream',      barColor:'bg-forest' },
+        { id:'sick',     label:'Sick Leave',   borderColor:'border-violet-100', barColor:'bg-violet-500' },
+        { id:'comp',     label:'Comp Time',    borderColor:'border-amber-100',  barColor:'bg-amber-500' }
       ];
       var vacRisk = uolRisks && uolRisks.vacation;
       var showUncappedVacation = vacRisk && vacRisk.boundaryDate === projDate;
@@ -189,14 +185,14 @@
           '<div class="flex justify-between text-xs text-slate-400 mt-1"><span>0</span><span>Max: ' + RC.fmtHours(limit, profile) + '</span></div></div>'
         ) : '';
 
-        return '<div class="bg-white rounded-xl border ' + (isNeg ? 'border-red-200' : 'border-' + t.color + '-100') + ' shadow-sm p-5">' +
+        return '<div class="bg-white rounded-xl border ' + (isNeg ? 'border-red-200' : t.borderColor) + ' shadow-sm p-5">' +
           '<p class="text-sm font-medium text-slate-500 mb-2">' + t.label + '</p>' +
           '<p class="text-3xl font-bold ' + (isNeg ? 'text-red-600' : 'text-slate-800') + '">' + RC.fmtHours(curr, profile) + '</p>' +
           '<p class="text-xs text-slate-400 mb-3">current balance</p>' +
           '<div class="border-t border-slate-100 pt-3 space-y-1.5">' +
             '<div class="flex justify-between text-sm">' +
               '<span class="text-slate-500">Projected ' + RC.fmtDate(projDate) + '</span>' +
-              '<span class="font-semibold ' + (proj < 0 ? 'text-red-600' : 'text-' + t.color + '-600') + '">' + RC.fmtHours(proj, profile) + '</span>' +
+              '<span class="font-semibold ' + (proj < 0 ? 'text-red-600' : 'text-slate-700') + '">' + RC.fmtHours(proj, profile) + '</span>' +
             '</div>' +
             (accH ? '<div class="flex justify-between text-sm"><span class="text-slate-500">Next accrual ' + RC.fmtDateShort(nextAcc.date) + '</span><span class="text-emerald-600 font-medium">+' + RC.fmtHours(accH, profile) + '</span></div>' : '') +
           '</div>' +
@@ -236,63 +232,88 @@
 
     RC.setupModal('quick-add-modal');
 
-    // Planned/Actual mode removed: infer planned from the start date (future dates are planned)
+    var actionExpanded = false;
 
     function updateQuickAddForm() {
-      var action = document.getElementById('qa-action').value;
-      var startDate = document.getElementById('qa-date').value;
-      var planned = startDate && startDate > RC.todayISO();
-      var workdayHours = RC.getWorkdayHours(profile);
-      var endDate = document.getElementById('qa-end-date').value;
-      var startDate = document.getElementById('qa-date').value;
-      var help = document.getElementById('qa-range-help');
+      var type   = document.getElementById('qa-type').value;
+      var isComp = type === 'comp';
+      var actionWrapper = document.getElementById('qa-action-wrapper');
+      var adjustToggle  = document.getElementById('qa-adjust-toggle');
+      var workdayHours  = RC.getWorkdayHours(profile);
 
-      document.getElementById('qa-hours-help').textContent = 'Default workday: ' + RC.fmtHours(workdayHours, profile) + '. For a date range with leave taken, one entry is created per workday.';
-
-      var labels = {
-        actual: { used: 'Leave taken', awarded: 'Credit awarded', forfeited: 'Hours forfeited' },
-        planned:{ used: 'Planned leave', awarded: 'Planned credit', forfeited: 'Planned forfeiture' }
-      };
-      Array.from(document.getElementById('qa-action').options).forEach(function(option) {
-        option.textContent = labels[planned ? 'planned' : 'actual'][option.value] || option.textContent;
-      });
-
-      var showRangeHelp = action === 'used' && endDate && startDate && endDate > startDate;
-      help.classList.toggle('hidden', !showRangeHelp);
-      if (showRangeHelp) {
-        help.textContent = 'Range mode will skip weekends and observed holidays and create one ' + RC.fmtHours(workdayHours, profile) + ' entry per workday.';
+      // Comp time can only be "used" here — awards go through the Comp page (which tracks expiry)
+      if (isComp) {
+        document.getElementById('qa-action').value = 'used';
+        actionWrapper.classList.add('hidden');
+        adjustToggle.classList.add('hidden');
+        actionExpanded = false;
+      } else {
+        adjustToggle.classList.remove('hidden');
+        actionWrapper.classList.toggle('hidden', !actionExpanded);
       }
 
-      // no mode toggle to update (inferred from date)
+      var action    = document.getElementById('qa-action').value;
+      var needsDate = action === 'used';
+
+      // Show/hide date row
+      document.getElementById('qa-date-row').classList.toggle('hidden', !needsDate);
+      if (!needsDate) {
+        document.getElementById('qa-date').value     = RC.todayISO();
+        document.getElementById('qa-end-date').value = '';
+      }
+
+      // Update "used" option label to reflect planned vs actual
+      var startDate = document.getElementById('qa-date').value;
+      var planned   = needsDate && startDate && startDate > RC.todayISO();
+      var usedOpt = document.querySelector('#qa-action option[value="used"]');
+      if (usedOpt) usedOpt.textContent = planned ? 'Planned leave' : 'Leave taken';
+
+      // Modal title
+      document.querySelector('#quick-add-modal h3').textContent =
+        action === 'awarded' ? 'Award / Adjust Balance' : 'Log Leave';
+
+      // Hours help
+      document.getElementById('qa-hours-help').textContent =
+        'Default workday: ' + RC.fmtHours(workdayHours, profile) +
+        (needsDate ? '. For a date range, one entry is created per workday.' : '.');
+
+      // Range help
+      var endDate = document.getElementById('qa-end-date').value;
+      var showRangeHelp = needsDate && endDate && startDate && endDate > startDate;
+      document.getElementById('qa-range-help').classList.toggle('hidden', !showRangeHelp);
+      if (showRangeHelp) {
+        document.getElementById('qa-range-help').textContent =
+          'Range mode will skip weekends and observed holidays and create one ' + RC.fmtHours(workdayHours, profile) + ' entry per workday.';
+      }
     }
 
     document.getElementById('quick-add-btn').addEventListener('click', function() {
-      document.getElementById('qa-date').value = RC.todayISO();
+      actionExpanded = false;
+      document.getElementById('qa-date').value     = RC.todayISO();
       document.getElementById('qa-end-date').value = '';
-      document.getElementById('qa-hours').value = RC.getWorkdayHours(profile);
-      document.getElementById('qa-action').value = 'used';
-      // hide advanced options by default
-      var aw = document.getElementById('qa-action-wrapper'); if (aw) aw.classList.add('hidden');
-      var at = document.getElementById('qa-advanced-toggle'); if (at) at.textContent = 'Show advanced';
+      document.getElementById('qa-hours').value    = RC.getWorkdayHours(profile);
+      document.getElementById('qa-type').value     = 'vacation';
+      document.getElementById('qa-action').value   = 'used';
+      document.getElementById('qa-notes').value    = '';
       updateQuickAddForm();
       RC.openModal('quick-add-modal');
     });
 
     document.getElementById('quick-add-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      var hours = parseFloat(document.getElementById('qa-hours').value);
-      var date  = document.getElementById('qa-date').value;
+      var hours   = parseFloat(document.getElementById('qa-hours').value);
+      var date    = document.getElementById('qa-date').value;
       var endDate = document.getElementById('qa-end-date').value;
-      if (!date || !hours || hours <= 0) { RC.showToast('Enter a valid start date and hours.', 'warning'); return; }
-      if (endDate && endDate < date) { RC.showToast('End date must be on or after the start date.', 'warning'); return; }
+      if (!date || !hours || hours <= 0) { RC.showToast('Enter a valid date and hours.', 'warning'); return; }
+      if (endDate && endDate < date) { RC.showToast('End date must be on or after start date.', 'warning'); return; }
       var draft = {
-        startDate: date,
-        endDate: endDate || null,
+        startDate:   date,
+        endDate:     endDate || null,
         leaveTypeId: document.getElementById('qa-type').value,
-        action: document.getElementById('qa-action').value,
-        hours: hours,
-        planned: date > RC.todayISO(),
-        notes: document.getElementById('qa-notes').value.trim() || null
+        action:      document.getElementById('qa-action').value,
+        hours:       hours,
+        planned:     date > RC.todayISO(),
+        notes:       document.getElementById('qa-notes').value.trim() || null
       };
       try {
         RC.expandEntryDraft(profile, draft).forEach(function(tx) { RC.addTransaction(profile, tx); });
@@ -306,23 +327,15 @@
       render();
     });
 
-    ['qa-action','qa-date','qa-end-date'].forEach(function(id) {
+    ['qa-action','qa-date','qa-end-date','qa-type'].forEach(function(id) {
       document.getElementById(id).addEventListener('input', updateQuickAddForm);
     });
-    // removed mode inputs; planned inferred from date
 
-    // Advanced toggle for Entry Type — keeps primary UI simple
-    var advToggle = document.getElementById('qa-advanced-toggle');
-    if (advToggle) {
-      advToggle.addEventListener('click', function() {
-        var wrapper = document.getElementById('qa-action-wrapper');
-        if (!wrapper) return;
-        var hidden = wrapper.classList.toggle('hidden');
-        advToggle.textContent = hidden ? 'Show advanced' : 'Hide advanced';
-        // ensure form labels update when revealed
-        updateQuickAddForm();
-      });
-    }
+    document.getElementById('qa-adjust-toggle').addEventListener('click', function() {
+      actionExpanded = !actionExpanded;
+      if (!actionExpanded) document.getElementById('qa-action').value = 'used';
+      updateQuickAddForm();
+    });
 
     projInput.addEventListener('change', render);
     updateQuickAddForm();

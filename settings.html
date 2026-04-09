@@ -32,12 +32,12 @@
 
       <!-- Step 1: Privacy + name -->
       <div id="wiz-1" class="px-6 py-6">
-        <h3 class="font-semibold text-lg mb-2">Your data is 100% private</h3>
-        <div class="bg-cream-panel border border-cream rounded-lg p-4 text-sm text-forest mb-5 space-y-2">
-          <p>Recess is a <strong>static web page</strong> — there is no server. Everything you enter stays on this device in your browser's local storage.</p>
-          <p>Your balances, service date, and usage history are <strong>never transmitted anywhere</strong>. The source code is open and auditable on GitHub.</p>
-          <p>Export your data to a JSON file at any time and import it on any device.</p>
-        </div>
+        <label class="flex items-center justify-center gap-2 w-full border-2 border-dashed border-slate-200 hover:border-forest text-slate-500 hover:text-forest font-medium py-2.5 rounded-lg text-sm cursor-pointer transition-colors mb-5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+          Restore from backup instead
+          <input type="file" id="wiz-import-file" accept=".json" class="hidden">
+        </label>
+        <p class="text-xs text-slate-400 text-center -mt-3 mb-5">No account needed — all data stays on this device.</p>
         <div class="space-y-3">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Your name <span class="text-slate-400 font-normal">(for display)</span></label>
@@ -151,6 +151,13 @@
             </select>
           </div>
           <div id="s-incept-row"><label class="block text-sm font-medium text-slate-700 mb-1">Federal service start date</label><input type="date" id="s-incept" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div id="s-accrual-row" class="hidden space-y-3">
+            <p class="text-xs text-slate-500">Hours accrued per pay period.</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block text-sm font-medium text-slate-700 mb-1">Annual leave (hrs/PP)</label><input type="number" id="s-vac-rate" min="0" step="0.25" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+              <div><label class="block text-sm font-medium text-slate-700 mb-1">Sick leave (hrs/PP)</label><input type="number" id="s-sick-rate" min="0" step="0.25" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -304,6 +311,24 @@
     document.getElementById('wiz-anchor').addEventListener('change', function() { updatePPPreview('wiz-anchor','wiz-freq','wiz-pp-preview'); });
     document.getElementById('wiz-freq').addEventListener('change', function() { updatePPPreview('wiz-anchor','wiz-freq','wiz-pp-preview'); });
 
+    document.getElementById('wiz-import-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          profile = RC.importJSON(ev.target.result);
+          document.getElementById('wizard').classList.add('hidden');
+          loadSettings(profile);
+          RC.showToast('Backup imported — welcome back!', 'success', 4000);
+        } catch(err) {
+          RC.showToast('Import failed: ' + err.message, 'error', 5000);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
     document.getElementById('wiz-finish').addEventListener('click', function() {
       var p = RC.createDefaultProfile(document.getElementById('wiz-name').value || 'My Profile');
       p.settings.employerPreset          = wizPreset;
@@ -328,11 +353,21 @@
       p.balances.hours.sick     = parseFloat(document.getElementById('wiz-bal-sick').value) || 0;
       p.balances.hours.comp     = parseFloat(document.getElementById('wiz-bal-comp').value) || 0;
 
+      // Create an opening balance comp block so it can be tracked, labeled, and expired
+      if (p.balances.hours.comp > 0) {
+        RC.addCompBlock(p, {
+          label: 'Opening balance',
+          dateEarned: p.balances.asOfDate,
+          hoursOriginal: p.balances.hours.comp,
+          hoursRemaining: p.balances.hours.comp,
+          expiresOn: null,
+          isOpeningBalance: true,
+          notes: null
+        });
+      }
+
       RC.saveProfile(p);
-      profile = p;
-      document.getElementById('wizard').classList.add('hidden');
-      loadSettings(p);
-      RC.showToast('Profile created! Welcome to Recess.', 'success', 4000);
+      window.location.href = 'index.html';
     });
 
     // --- Settings form ---
@@ -354,13 +389,21 @@
       var uolSick = p.settings.useOrLose.limits.sick;
       document.getElementById('s-uol-sick').value = uolSick !== null ? uolSick : '';
       document.getElementById('s-comp-warn').value = p.settings.compExpirationWarningDays || 30;
-      document.getElementById('s-incept-row').classList.toggle('hidden', p.settings.employerPreset !== 'us_federal');
+      var isFederal = p.settings.employerPreset === 'us_federal';
+      document.getElementById('s-incept-row').classList.toggle('hidden', !isFederal);
+      document.getElementById('s-accrual-row').classList.toggle('hidden', isFederal);
+      var vacOverride  = (p.settings.accrualOverrides || []).filter(function(o) { return o.leaveTypeId === 'vacation'; }).sort(function(a,b) { return b.effectiveDate.localeCompare(a.effectiveDate); })[0];
+      var sickOverride = (p.settings.accrualOverrides || []).filter(function(o) { return o.leaveTypeId === 'sick'; }).sort(function(a,b) { return b.effectiveDate.localeCompare(a.effectiveDate); })[0];
+      document.getElementById('s-vac-rate').value  = vacOverride  ? vacOverride.hoursPerPeriod  : '';
+      document.getElementById('s-sick-rate').value = sickOverride ? sickOverride.hoursPerPeriod : '';
       updatePPPreview('s-anchor','s-freq','s-pp-preview');
       renderHolidayCBs(p);
     }
 
     document.getElementById('s-preset').addEventListener('change', function(e) {
-      document.getElementById('s-incept-row').classList.toggle('hidden', e.target.value !== 'us_federal');
+      var isFederal = e.target.value === 'us_federal';
+      document.getElementById('s-incept-row').classList.toggle('hidden', !isFederal);
+      document.getElementById('s-accrual-row').classList.toggle('hidden', isFederal);
     });
     document.getElementById('s-anchor').addEventListener('change', function() { updatePPPreview('s-anchor','s-freq','s-pp-preview'); });
     document.getElementById('s-freq').addEventListener('change', function() { updatePPPreview('s-anchor','s-freq','s-pp-preview'); });
@@ -384,6 +427,16 @@
       profile.balances.hours.vacation = parseFloat(document.getElementById('s-bal-vac').value) || 0;
       profile.balances.hours.sick     = parseFloat(document.getElementById('s-bal-sick').value) || 0;
       profile.balances.hours.comp     = parseFloat(document.getElementById('s-bal-comp').value) || 0;
+      // Keep the opening balance comp block in sync with the starting balance
+      var newCompHours = profile.balances.hours.comp;
+      var openBlock = profile.compBlocks.find(function(b) { return b.isOpeningBalance; });
+      if (newCompHours > 0 && openBlock) {
+        RC.updateCompBlock(profile, openBlock.id, { hoursOriginal: newCompHours, hoursRemaining: newCompHours });
+      } else if (newCompHours > 0 && !openBlock) {
+        RC.addCompBlock(profile, { label: 'Opening balance', dateEarned: profile.balances.asOfDate, hoursOriginal: newCompHours, hoursRemaining: newCompHours, expiresOn: null, isOpeningBalance: true, notes: null });
+      } else if (newCompHours === 0 && openBlock) {
+        RC.deleteCompBlock(profile, openBlock.id);
+      }
       profile.settings.payPeriod.frequency    = document.getElementById('s-freq').value;
       profile.settings.payPeriod.anchorDate   = document.getElementById('s-anchor').value;
       profile.settings.payPeriod.accrualTiming = document.getElementById('s-timing').value;
@@ -394,6 +447,16 @@
       var us = document.getElementById('s-uol-sick').value;
       profile.settings.useOrLose.limits.sick     = us !== '' ? parseFloat(us) : null;
       profile.settings.compExpirationWarningDays = parseInt(document.getElementById('s-comp-warn').value) || 30;
+      if (profile.settings.employerPreset === 'custom') {
+        var vr = parseFloat(document.getElementById('s-vac-rate').value);
+        var sr = parseFloat(document.getElementById('s-sick-rate').value);
+        // Replace catch-all overrides (effectiveDate '2000-01-01') with new values; preserve any tiered entries
+        var others = (profile.settings.accrualOverrides || []).filter(function(o) { return o.effectiveDate !== '2000-01-01'; });
+        profile.settings.accrualOverrides = others.concat([
+          { leaveTypeId: 'vacation', effectiveDate: '2000-01-01', hoursPerPeriod: isNaN(vr) ? 0 : vr },
+          { leaveTypeId: 'sick',     effectiveDate: '2000-01-01', hoursPerPeriod: isNaN(sr) ? 0 : sr }
+        ]);
+      }
       profile.settings.holidays.observedSet = Array.from(document.querySelectorAll('.holiday-cb:checked')).map(function(cb) { return cb.dataset.key; });
       RC.saveProfile(profile);
       RC.showToast('Settings saved.', 'success');

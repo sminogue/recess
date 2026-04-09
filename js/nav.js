@@ -20,13 +20,13 @@ RC.renderNav = function() {
 
   function link(item) {
     const active = item.href === current;
-    const cls    = 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-forest text-cream' : 'text-cream hover:bg-forest hover:text-cream');
+    const cls    = 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-white/20 text-white font-semibold' : 'text-white/70 hover:text-white hover:bg-white/10');
     return '<a href="' + item.href + '" class="' + cls + '"><svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="' + item.icon + '"/></svg><span>' + item.label + '</span></a>';
   }
 
   function mlink(item) {
     const active = item.href === current;
-    const cls    = 'flex items-center gap-3 px-4 py-3 text-sm font-medium ' + (active ? 'bg-forest text-cream' : 'text-cream hover:bg-forest');
+    const cls    = 'flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ' + (active ? 'bg-white/20 text-white font-semibold' : 'text-white/70 hover:text-white hover:bg-white/10');
     return '<a href="' + item.href + '" class="' + cls + '"><svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="' + item.icon + '"/></svg>' + item.label + '</a>';
   }
 

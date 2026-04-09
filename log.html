@@ -13,35 +13,45 @@
   <main class="max-w-7xl mx-auto px-4 py-6">
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
       <h1 class="text-2xl font-bold text-slate-800">Leave Log</h1>
-      <button id="add-btn" class="flex items-center gap-2 brand-btn-primary text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        Add Entry
-      </button>
-    </div>
-
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-5 flex flex-wrap gap-3 items-center">
-      <select id="filter-type" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
-        <option value="">All types</option>
-        <option value="vacation">Annual Leave</option>
-        <option value="sick">Sick Leave</option>
-        <option value="comp">Comp Time</option>
-      </select>
-      <select id="filter-action" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
-        <option value="">All actions</option>
-        <option value="used">Used</option>
-        <option value="awarded">Awarded</option>
-        <option value="forfeited">Forfeited</option>
-        <option value="expired">Expired</option>
-      </select>
-      <select id="filter-planned" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
-        <option value="">Actual + planned</option>
-        <option value="actual">Actual only</option>
-        <option value="planned">Planned only</option>
-      </select>
-      <input type="text" id="filter-search" placeholder="Search notes..." class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm flex-1 min-w-32">
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <!-- Tab bar -->
+      <div class="flex border-b border-slate-200">
+        <button id="view-list-btn" class="flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors" style="border-color:var(--brand-forest);color:var(--brand-forest)">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+          List
+        </button>
+        <button id="view-cal-btn" class="flex items-center gap-2 px-5 py-3.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+          Calendar
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="p-4 border-b border-slate-100 flex flex-wrap gap-3 items-center bg-slate-50/60">
+        <select id="filter-type" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
+          <option value="">All types</option>
+          <option value="vacation">Annual Leave</option>
+          <option value="sick">Sick Leave</option>
+          <option value="comp">Comp Time</option>
+        </select>
+        <select id="filter-action" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
+          <option value="">All actions</option>
+          <option value="used">Used</option>
+          <option value="awarded">Awarded</option>
+          <option value="forfeited">Forfeited</option>
+          <option value="expired">Expired</option>
+        </select>
+        <select id="filter-planned" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">
+          <option value="">Actual + planned</option>
+          <option value="actual">Actual only</option>
+          <option value="planned">Planned only</option>
+        </select>
+        <input type="text" id="filter-search" placeholder="Search notes..." class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm flex-1 min-w-32">
+      </div>
+
+    <div id="list-view" class="overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200">
@@ -63,6 +73,38 @@
         <p class="text-sm mt-1">Try adjusting your filters or add a new entry.</p>
       </div>
     </div>
+
+    <div id="calendar-view" class="hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+        <button id="cal-prev" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        </button>
+        <div class="flex items-center gap-3">
+          <h2 id="cal-month-label" class="font-semibold text-slate-800 text-lg"></h2>
+          <button id="cal-today" class="text-xs px-2.5 py-1 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">Today</button>
+        </div>
+        <button id="cal-next" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Sun</div>
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Mon</div>
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Tue</div>
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Wed</div>
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Thu</div>
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Fri</div>
+        <div class="px-3 py-2 text-xs font-medium text-slate-500 text-center">Sat</div>
+      </div>
+      <div id="cal-grid" class="grid grid-cols-7"></div>
+      <div class="flex flex-wrap items-center gap-4 px-6 py-3 border-t border-slate-100 text-xs text-slate-500">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm inline-block" style="background:rgba(46,74,61,0.15)"></span>Annual Leave</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-violet-100 inline-block"></span>Sick Leave</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm inline-block" style="background:rgba(140,78,58,0.15)"></span>Comp Time</span>
+        <span class="flex items-center gap-1.5"><span class="text-slate-400">○</span> Planned</span>
+      </div>
+    </div>
+    </div><!-- /outer card -->
   </main>
 
   <div id="entry-modal" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
@@ -91,16 +133,13 @@
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label><input type="date" id="e-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
-          <div><label class="block text-sm font-medium text-slate-700 mb-1">End Date <span class="text-slate-400 font-normal">(optional)</span></label><input type="date" id="e-end-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Date</label><input type="date" id="e-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Hours</label>
+            <input type="number" id="e-hours" min="0.25" step="0.25" value="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Hours</label>
-          <input type="number" id="e-hours" min="0.25" step="0.25" value="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
-          <p id="e-hours-help" class="text-xs text-slate-400 mt-1"></p>
-        </div>
-        <div id="e-range-help" class="hidden rounded-lg border border-cream bg-cream-panel px-3 py-2 text-xs text-forest"></div>
-        <div id="e-edit-note" class="hidden rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">Editing only updates this single entry. Date ranges are available when adding new entries.</div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">Editing updates this entry only. To log new leave use the dashboard.</div>
         <div><label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label><input type="text" id="e-notes" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
         <div class="flex gap-3 pt-2">
           <button type="submit" class="flex-1 brand-btn-primary text-white font-medium py-2 rounded-lg text-sm">Save</button>
@@ -125,31 +164,12 @@
 
     var ltColors = { vacation:'badge badge-forest', sick:'badge text-violet-700 bg-violet-50', comp:'badge badge-clay' };
 
-    // Planned/Actual mode removed: infer planned from the start date (future dates are planned)
-
     function updateEntryForm() {
-      var action = document.getElementById('e-action').value;
-      var workdayHours = RC.getWorkdayHours(profile);
+      // Edit-only modal: date is always visible, label reflects planned vs actual
       var startDate = document.getElementById('e-date').value;
-      var endDate = document.getElementById('e-end-date').value;
-      var isEdit = !!document.getElementById('edit-id').value;
-      var planned = startDate && startDate > RC.todayISO();
-      var labels = {
-        actual: { used: 'Leave taken', awarded: 'Credit awarded', forfeited: 'Hours forfeited' },
-        planned:{ used: 'Planned leave', awarded: 'Planned credit', forfeited: 'Planned forfeiture' }
-      };
-      Array.from(document.getElementById('e-action').options).forEach(function(option) {
-        option.textContent = labels[planned ? 'planned' : 'actual'][option.value] || option.textContent;
-      });
-      document.getElementById('e-hours-help').textContent = 'Default workday: ' + RC.fmtHours(workdayHours, profile) + '.';
-      var rangeHelp = document.getElementById('e-range-help');
-      var showRangeHelp = !isEdit && action === 'used' && endDate && startDate && endDate > startDate;
-      rangeHelp.classList.toggle('hidden', !showRangeHelp);
-      if (showRangeHelp) {
-        rangeHelp.textContent = 'Range mode will skip weekends and observed holidays and create one ' + RC.fmtHours(workdayHours, profile) + ' entry per workday.';
-      }
-      document.getElementById('e-end-date').disabled = isEdit;
-      document.getElementById('e-edit-note').classList.toggle('hidden', !isEdit);
+      var planned   = startDate && startDate > RC.todayISO();
+      var usedOpt   = document.querySelector('#e-action option[value="used"]');
+      if (usedOpt) usedOpt.textContent = planned ? 'Planned leave' : 'Leave taken';
     }
 
     function getFilters() {
@@ -249,26 +269,11 @@
       document.querySelectorAll('.del-btn').forEach(function(btn) { btn.addEventListener('click', function() { deleteTx(btn.dataset.id, btn.dataset.kind); }); });
     }
 
-    function openAdd() {
-      document.getElementById('modal-title').textContent = 'Add Entry';
-      document.getElementById('edit-id').value  = '';
-      document.getElementById('e-date').value   = RC.todayISO();
-      document.getElementById('e-end-date').value = '';
-      document.getElementById('e-hours').value  = RC.getWorkdayHours(profile);
-      document.getElementById('e-type').value   = 'vacation';
-      document.getElementById('e-action').value = 'used';
-      document.getElementById('e-notes').value  = '';
-      updateEntryForm();
-      RC.openModal('entry-modal');
-    }
-
     function openEdit(id) {
       var tx = profile.transactions.find(function(t) { return t.id === id; });
       if (!tx) return;
-      document.getElementById('modal-title').textContent = 'Edit Entry';
       document.getElementById('edit-id').value  = tx.id;
       document.getElementById('e-date').value   = tx.date;
-      document.getElementById('e-end-date').value = '';
       document.getElementById('e-hours').value  = tx.hours;
       document.getElementById('e-type').value   = tx.leaveTypeId;
       document.getElementById('e-action').value = tx.action;
@@ -286,57 +291,181 @@
         RC.deleteTransaction(profile, id);
       }
       RC.saveProfile(profile);
-      renderTable();
+      if (currentView === 'list') renderTable(); else renderCalendar();
       RC.showToast(kind === 'range' ? 'Leave range deleted.' : 'Entry deleted.', 'info');
     }
 
-    document.getElementById('add-btn').addEventListener('click', openAdd);
-
     document.getElementById('entry-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      var id     = document.getElementById('edit-id').value;
-      var date   = document.getElementById('e-date').value;
-      var endDate = document.getElementById('e-end-date').value;
-      var hours  = parseFloat(document.getElementById('e-hours').value);
-      if (!date || !hours || hours <= 0) { RC.showToast('Enter a valid start date and hours.', 'warning'); return; }
-      if (endDate && endDate < date) { RC.showToast('End date must be on or after the start date.', 'warning'); return; }
+      var id    = document.getElementById('edit-id').value;
+      var date  = document.getElementById('e-date').value;
+      var hours = parseFloat(document.getElementById('e-hours').value);
+      if (!id) return; // safety: modal is edit-only
+      if (!date || !hours || hours <= 0) { RC.showToast('Enter a valid date and hours.', 'warning'); return; }
       var draft = {
-        startDate: date,
-        endDate: endDate || null,
-        hours: hours,
+        startDate:   date,
+        endDate:     null,
+        hours:       hours,
         leaveTypeId: document.getElementById('e-type').value,
-        action: document.getElementById('e-action').value,
-        planned: date > RC.todayISO(),
-        notes: document.getElementById('e-notes').value.trim() || null
+        action:      document.getElementById('e-action').value,
+        planned:     date > RC.todayISO(),
+        notes:       document.getElementById('e-notes').value.trim() || null
       };
       try {
-        if (id) {
-          var update = RC.expandEntryDraft(profile, draft, { isEdit: true })[0];
-          RC.updateTransaction(profile, id, update);
-          RC.showToast('Entry updated.', 'success');
-        } else {
-          RC.expandEntryDraft(profile, draft).forEach(function(tx) { RC.addTransaction(profile, tx); });
-          RC.showToast('Entry added.', 'success');
-        }
+        var update = RC.expandEntryDraft(profile, draft, { isEdit: true })[0];
+        RC.updateTransaction(profile, id, update);
+        RC.showToast('Entry updated.', 'success');
       } catch (err) {
         RC.showToast(err.message, 'warning');
         return;
       }
       RC.saveProfile(profile);
       RC.closeModal('entry-modal');
-      renderTable();
+      if (currentView === 'list') renderTable(); else renderCalendar();
     });
 
-    ['e-action','e-date','e-end-date'].forEach(function(id) {
-      document.getElementById(id).addEventListener('input', updateEntryForm);
-    });
-    // mode inputs removed; planned inferred from date
+    document.getElementById('e-date').addEventListener('input', updateEntryForm);
 
     ['filter-type','filter-action','filter-planned','filter-search'].forEach(function(id) {
-      document.getElementById(id).addEventListener('input', renderTable);
+      document.getElementById(id).addEventListener('input', function() {
+        if (currentView === 'list') renderTable(); else renderCalendar();
+      });
     });
 
-    updateEntryForm();
+    // ── View toggle ──────────────────────────────────────────────────────────
+    var currentView = 'list';
+    var calYear  = new Date().getFullYear();
+    var calMonth = new Date().getMonth(); // 0-indexed
+
+    function switchView(view) {
+      currentView = view;
+      var isList = view === 'list';
+      document.getElementById('list-view').classList.toggle('hidden', !isList);
+      document.getElementById('calendar-view').classList.toggle('hidden', isList);
+
+      // Active: brand underline + bold + forest color. Inactive: transparent underline + muted.
+      function styleTab(btn, active) {
+        btn.style.borderColor = active ? 'var(--brand-forest)' : 'transparent';
+        btn.style.color       = active ? 'var(--brand-forest)' : '';
+        btn.classList.toggle('font-semibold', active);
+        btn.classList.toggle('font-medium',  !active);
+        btn.classList.toggle('text-slate-500', !active);
+      }
+      styleTab(document.getElementById('view-list-btn'), isList);
+      styleTab(document.getElementById('view-cal-btn'),  !isList);
+
+      if (isList) renderTable(); else renderCalendar();
+    }
+
+    document.getElementById('view-list-btn').addEventListener('click', function() { switchView('list'); });
+    document.getElementById('view-cal-btn').addEventListener('click', function() { switchView('calendar'); });
+
+    // ── Calendar rendering ───────────────────────────────────────────────────
+    var CAL_LT_STYLES = {
+      vacation: 'style="background:rgba(46,74,61,0.12);color:var(--brand-forest);border:1px solid rgba(46,74,61,0.2)"',
+      sick:     'style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe"',
+      comp:     'style="background:rgba(140,78,58,0.12);color:var(--brand-clay);border:1px solid rgba(140,78,58,0.2)"'
+    };
+
+    function renderCalendar() {
+      var enriched = RC.enrichTransactionsWithRunningBalance(profile);
+      var f = getFilters();
+      var filtered = enriched.filter(function(tx) {
+        if (f.type   && tx.leaveTypeId !== f.type)  return false;
+        if (f.action && tx.action !== f.action)      return false;
+        if (f.planned === 'actual'  &&  tx.planned)  return false;
+        if (f.planned === 'planned' && !tx.planned)  return false;
+        if (f.search  && !(tx.notes||'').toLowerCase().includes(f.search)) return false;
+        return true;
+      });
+
+      // Group transactions by date
+      var byDate = {};
+      filtered.forEach(function(tx) {
+        if (!byDate[tx.date]) byDate[tx.date] = [];
+        byDate[tx.date].push(tx);
+      });
+
+      // Month label
+      var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      document.getElementById('cal-month-label').textContent = monthNames[calMonth] + ' ' + calYear;
+
+      var today    = RC.todayISO();
+      var firstDay = new Date(calYear, calMonth, 1).getDay(); // 0 = Sun
+      var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+      var cells = [];
+
+      // Leading empty cells
+      for (var i = 0; i < firstDay; i++) {
+        cells.push('<div class="border-b border-r border-slate-100 min-h-24 p-1.5 bg-slate-50/60"></div>');
+      }
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var mm = String(calMonth + 1).padStart(2, '0');
+        var dd = String(d).padStart(2, '0');
+        var dateStr  = calYear + '-' + mm + '-' + dd;
+        var entries  = byDate[dateStr] || [];
+        var isToday  = dateStr === today;
+        var isFuture = dateStr > today;
+        var isWeekend = (function() { var day = new Date(calYear, calMonth, d).getDay(); return day === 0 || day === 6; }());
+
+        var cellBg = isFuture && !isWeekend ? 'bg-cream-panel/40' : isWeekend ? 'bg-slate-50/60' : '';
+
+        var dateNumHtml = isToday
+          ? '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-forest text-white text-xs font-bold">' + d + '</span>'
+          : '<span class="text-xs font-medium text-slate-' + (isWeekend ? '300' : '500') + '">' + d + '</span>';
+
+        var pills = entries.map(function(tx) {
+          var sty = CAL_LT_STYLES[tx.leaveTypeId] || 'style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0"';
+          var shortType = (RC.LEAVE_TYPE_LABELS[tx.leaveTypeId] || tx.leaveTypeId).split(' ')[0];
+          var hrs = RC.fmtHours(tx.hours, profile);
+          var tipNotes = tx.notes ? ': ' + tx.notes : '';
+          return '<div class="text-xs px-1 py-0.5 rounded truncate mb-0.5 leading-snug cursor-default" ' + sty + ' ' +
+            'title="' + (RC.LEAVE_TYPE_LABELS[tx.leaveTypeId]||tx.leaveTypeId) + ' — ' + (RC.ACTION_LABELS[tx.action]||tx.action) + ' ' + hrs + tipNotes + '">' +
+            (tx.planned ? '○ ' : '') + hrs + ' ' + shortType +
+          '</div>';
+        }).join('');
+
+        var addHint = '';
+
+        cells.push(
+          '<div class="border-b border-r border-slate-100 min-h-24 p-1.5 ' + cellBg + '">' +
+            '<div class="mb-1">' + dateNumHtml + '</div>' +
+            pills +
+            addHint +
+          '</div>'
+        );
+      }
+
+      // Trailing filler cells
+      var remainder = (firstDay + daysInMonth) % 7;
+      if (remainder > 0) {
+        for (var j = 0; j < 7 - remainder; j++) {
+          cells.push('<div class="border-b border-r border-slate-100 min-h-24 p-1.5 bg-slate-50/60"></div>');
+        }
+      }
+
+      document.getElementById('cal-grid').innerHTML = cells.join('');
+
+    }
+
+    document.getElementById('cal-prev').addEventListener('click', function() {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', function() {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+    document.getElementById('cal-today').addEventListener('click', function() {
+      calYear  = new Date().getFullYear();
+      calMonth = new Date().getMonth();
+      renderCalendar();
+    });
+
     renderTable();
     }
   </script>

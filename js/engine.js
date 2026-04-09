@@ -73,7 +73,14 @@ RC.calculateBalance = function(profile, targetDate, options) {
     events.push({ date: uolDate, priority: 4, kind: 'useOrLose' });
   }
 
-  // 4. Comp block expirations
+  // 4. Comp block earnings (hours credited when a block is earned, after asOf)
+  compBlocks.forEach(function(block) {
+    const earnedDate = RC.parseDate(block.dateEarned);
+    if (earnedDate <= asOf || earnedDate > target) return;
+    events.push({ date: earnedDate, priority: 1, kind: 'compEarned', blockId: block.id, hours: block.hoursOriginal });
+  });
+
+  // 5. Comp block expirations
   compBlocks.forEach(function(block) {
     if (!block.expiresOn) return;
     const expDate = RC.parseDate(block.expiresOn);
@@ -89,8 +96,9 @@ RC.calculateBalance = function(profile, targetDate, options) {
 
   // Apply events
   events.forEach(function(ev) {
-    if (ev.kind === 'accrual') {
-      bal[ev.leaveTypeId] = (bal[ev.leaveTypeId] || 0) + ev.hours;
+    if (ev.kind === 'accrual' || ev.kind === 'compEarned') {
+      const ltId = ev.leaveTypeId || 'comp';
+      bal[ltId] = (bal[ltId] || 0) + ev.hours;
 
     } else if (ev.kind === 'transaction') {
       const tx    = ev.tx;
