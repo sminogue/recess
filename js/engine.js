@@ -26,21 +26,18 @@ RC.calculateBalance = function(profile, targetDate, options) {
   const target = targetDate instanceof Date ? targetDate : RC.parseDate(targetDate);
   const asOf   = RC.parseDate(profile.balances.asOfDate);
 
-  // Helper: add non-opening-balance comp blocks earned by a given date to a balance object.
-  // Opening-balance blocks are excluded because their hours are already in profile.balances.hours.comp.
-  function seedCompBlocks(base, byDate) {
-    (profile.compBlocks || []).forEach(function(b) {
-      if (b.isOpeningBalance) return;
-      const earned = RC.parseDate(b.dateEarned);
-      if (!earned || earned > byDate) return;
-      base.comp = (base.comp || 0) + (b.hoursRemaining != null ? b.hoursRemaining : b.hoursOriginal);
-    });
+  // When asOf is null the user hasn't set a balance snapshot, so there is no meaningful
+  // stored starting point. Run the full projection from a sentinel date instead so that
+  // all transactions and comp-block accruals are applied (including comp deductions).
+  if (!asOf) {
+    return RC.calculateBalance(
+      { settings: profile.settings, balances: { asOfDate: '2000-01-01', hours: { vacation: 0, sick: 0, comp: 0 } }, transactions: profile.transactions, compBlocks: profile.compBlocks },
+      target, options
+    );
   }
 
-  if (!asOf || target <= asOf) {
-    const base = Object.assign({}, profile.balances.hours);
-    seedCompBlocks(base, target);
-    return base;
+  if (target <= asOf) {
+    return Object.assign({}, profile.balances.hours);
   }
 
   const bal = Object.assign({}, profile.balances.hours);
