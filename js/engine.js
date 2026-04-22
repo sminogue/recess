@@ -26,8 +26,21 @@ RC.calculateBalance = function(profile, targetDate, options) {
   const target = targetDate instanceof Date ? targetDate : RC.parseDate(targetDate);
   const asOf   = RC.parseDate(profile.balances.asOfDate);
 
+  // Helper: add non-opening-balance comp blocks earned by a given date to a balance object.
+  // Opening-balance blocks are excluded because their hours are already in profile.balances.hours.comp.
+  function seedCompBlocks(base, byDate) {
+    (profile.compBlocks || []).forEach(function(b) {
+      if (b.isOpeningBalance) return;
+      const earned = RC.parseDate(b.dateEarned);
+      if (!earned || earned > byDate) return;
+      base.comp = (base.comp || 0) + (b.hoursRemaining != null ? b.hoursRemaining : b.hoursOriginal);
+    });
+  }
+
   if (!asOf || target <= asOf) {
-    return Object.assign({}, profile.balances.hours);
+    const base = Object.assign({}, profile.balances.hours);
+    seedCompBlocks(base, target);
+    return base;
   }
 
   const bal = Object.assign({}, profile.balances.hours);
@@ -36,6 +49,14 @@ RC.calculateBalance = function(profile, targetDate, options) {
   const compBlocks = profile.compBlocks
     .map(function(b) { return Object.assign({}, b, { remaining: b.hoursRemaining != null ? b.hoursRemaining : b.hoursOriginal }); })
     .sort(function(a, b) { return a.dateEarned.localeCompare(b.dateEarned); });
+
+  // Non-opening-balance comp blocks earned on or before asOf aren't added as accrual
+  // events, but their hours also aren't in profile.balances.hours.comp. Seed them now
+  // so FIFO deduction stays consistent.
+  compBlocks.forEach(function(b) {
+    if (b.isOpeningBalance) return;
+    if (RC.parseDate(b.dateEarned) <= asOf) bal.comp = (bal.comp || 0) + b.remaining;
+  });
 
   const events = [];
 
