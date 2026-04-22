@@ -50,10 +50,42 @@ RC.calculateBalance = function(profile, targetDate, options) {
   // Non-opening-balance comp blocks earned on or before asOf aren't added as accrual
   // events, but their hours also aren't in profile.balances.hours.comp. Seed them now
   // so FIFO deduction stays consistent.
+  let earliestSeededDate = null;
   compBlocks.forEach(function(b) {
     if (b.isOpeningBalance) return;
-    if (RC.parseDate(b.dateEarned) <= asOf) bal.comp = (bal.comp || 0) + b.remaining;
+    const earned = RC.parseDate(b.dateEarned);
+    if (earned > asOf) return;
+    bal.comp = (bal.comp || 0) + b.remaining;
+    if (earliestSeededDate === null || earned < earliestSeededDate) earliestSeededDate = earned;
   });
+
+  // Comp deductions that occurred after the earliest seeded block was earned but on or
+  // before asOf are also missing from the snapshot (same retroactive-add situation).
+  // Apply them now so the seeded hours are correctly reduced.
+  if (earliestSeededDate !== null) {
+    profile.transactions
+      .filter(function(tx) {
+        const txDate = RC.parseDate(tx.date);
+        return tx.leaveTypeId === 'comp' &&
+               ['used', 'forfeited', 'expired'].includes(tx.action) &&
+               txDate > earliestSeededDate &&
+               txDate <= asOf &&
+               txDate <= target;
+      })
+      .sort(function(a, b) { return RC.parseDate(a.date) - RC.parseDate(b.date); })
+      .forEach(function(tx) {
+        let toDeduct = tx.hours;
+        compBlocks.forEach(function(blk) {
+          if (blk.isOpeningBalance || toDeduct <= 0 || blk.remaining <= 0) return;
+          const expDate = blk.expiresOn ? RC.parseDate(blk.expiresOn) : null;
+          if (expDate && expDate <= RC.parseDate(tx.date)) return;
+          const draw = Math.min(blk.remaining, toDeduct);
+          blk.remaining -= draw;
+          toDeduct -= draw;
+        });
+        bal.comp = Math.max(0, (bal.comp || 0) - tx.hours);
+      });
+  }
 
   const events = [];
 
